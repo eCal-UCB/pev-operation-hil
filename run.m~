@@ -13,15 +13,13 @@ par = init_params();
 % TODO: create matlab function for each choice -- to run fmincon
 itermax = 1e4;
 count = 0;
-xk = []; % TODO: put the values for the initialization
-zk = [];
-vk = [];
+xk = []
 while count < itermax
     % Update x -- fmincon with 
     
-    % Update z -- fmincon 
+    % Update z -- fmincon
     
-    % Update v -- 
+    % Update v
     
 end
 
