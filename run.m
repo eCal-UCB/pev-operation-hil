@@ -9,23 +9,23 @@
 p = init_params();
 global par
 par = p;
-N = par.N;
 
 %% Run algorithm -- block coordinate descent
 itermax = 1e4;
 count = 0;
-xk = ones(2*N+1,1);         % [soc0, ..., socN, u0, ..., uNm1];
-zk = ones(4,1);             % [z_c, z_uc, y, 1];
-vk = 0.1*ones(3,1);         % [sm_c, sm_uc, sm_y];
+xk = ones(2*par.N_flex+1,1);            % [soc0, ..., socN, u0, ..., uNm1];
+zk = ones(4,1);                         % [z_c, z_uc, y, 1];
+vk = 0.1*ones(3,1);                     % [sm_c, sm_uc, sm_y];
 par.x0 = xk; par.z0 = zk; par.v0 = vk;
 while count < itermax
     % Update x -- fmincon with 
-    xk = argmin_x(zk,xk,vk);
+    xk = argmin_x(zk,[],vk);
     
-    % Update z -- fmincon 
+    % Update z -- fmincon
+    zk = argmin_z([],xk,vk);
     
     % Update v -- fmincon
-    
+    vk = argmin_v(zk,xk,[]);
 end
 
 %% Visualization
