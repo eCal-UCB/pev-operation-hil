@@ -9,7 +9,7 @@ end
 % cost function
 J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N) - z(1))).^2) + par.lambda.h_c * 1/z(3);
             sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
-            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2)],v); %h2
+            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2)],v); 
 
 % inequality constraint
 A1L = [zeros(1,N) -1]; A1R = zeros(1,N);

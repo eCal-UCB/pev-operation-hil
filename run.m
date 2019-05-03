@@ -8,9 +8,10 @@
 clear; tic;
 
 %% Initialize parameters
+disp('[ INIT] initializing...');
 set_glob_par(init_params());
 par = get_glob_par();
-
+disp('[ INIT] DONE');
 
 %% Functions
 J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3); % h_c
@@ -41,16 +42,17 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     improve = Jk(count)-J(zk,xk,vk);
     
     if mod(count,1) == 0
-        fprintf('[ SOLVING] iter: %d, improve: %.3f\n',count,improve);
+        fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
     end
 end
 
-fprintf('[ DONE] (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
+fprintf('[ OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
 
 
 %% Visualization
 % TODO: what figures do we want to show?
 % TODO: what are the expected results? 
+disp('[ VIS] visualizing...');tic;
 xticklabel_ = {'Flex, z_{c}';'ASAP, z_{uc}';'Overstay, y'};
 
 % simulation result
@@ -75,3 +77,5 @@ plot(1:length(Jk(Jk~=0)),Jk(length(Jk(Jk~=0)))*ones(size(Jk(Jk~=0))),'--r','line
 xlim([1,length(Jk(Jk~=0))]);
 xlabel('Iteration'); ylabel('Cost'); title('BCD Convergence');
 set(gca,'fontsize',15);
+
+fprintf('[ VIS] DONE (%.2f sec)\n',toc);
