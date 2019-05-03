@@ -2,11 +2,10 @@ function xk = argmin_x(z,~,v)
 global par
 Ts = par.Ts;
 N = par.N_flex;
-par.h_c
 
 % cost function
 J_c = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N*Ts) - z(1))).^2) + par.h_c.lambda * 1/z(3);
-            sum((par.pow_max*(par.TOU(1:N*Ts) - z(2))).^2) + par.h_c.lambda * 1/z(3);
+            sum((par.pow_max*(par.TOU(1:N*Ts) - z(2))).^2) + par.h_uc.lambda * 1/z(3);
             sum((par.pow_max*(par.TOU(1:N*Ts) - z(2))).^2)],v); %h2
 
 % inequality constraint
