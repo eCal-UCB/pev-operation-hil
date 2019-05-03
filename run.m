@@ -12,9 +12,9 @@ set_glob_par(init_params());
 par = get_glob_par();
 
 
-%% Helper functions
-J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3)^2; % h_c
-            sum((par.station.pow_max*(par.TOU(1:par.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3)^2; % h_uc
+%% Functions
+J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3); % h_c
+            sum((par.station.pow_max*(par.TOU(1:par.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3); % h_uc
             sum((par.station.pow_max*(par.TOU(1:par.N_asap) - z(2))).^2)],v); % h_l
 
         
@@ -32,7 +32,6 @@ while count < itermax && residual > par.opt.eps
     end
     
     % update init variables
-%     J0=J(zk,xk,vk);
     par.z0 = zk; par.x0 = xk; par.v0 = vk; set_glob_par(par);
     
     % update control variables

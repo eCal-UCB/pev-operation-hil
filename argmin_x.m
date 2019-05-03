@@ -2,21 +2,16 @@ function xk = argmin_x(z,~,v)
 par = get_glob_par();
 N = par.N_flex;
 
+if (v < 0) | (sum(v) < 1-par.soft_v_eta) | (sum(v) > 1+par.soft_v_eta)
+    error('[ ERROR] invalid $v$');
+end
+
 % cost function
-J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N) - z(1))).^2) + par.lambda.h_c * 1/z(3)^2;
-            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2) + par.lambda.h_uc * 1/z(3)^2;
+J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N) - z(1))).^2) + par.lambda.h_c * 1/z(3);
+            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
             sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2)],v); %h2
 
 % inequality constraint
-% A1L = diag(ones(1,N+1)); A1R = zeros(N+1,N); A1L(end,end) = -1;
-% A2L = zeros(N,N+1); A2R = diag(ones(1,N));
-% A3L = zeros(N,N+1); A3R = diag(-ones(1,N));
-% b1 = ones(N+1,1); b1(end) = -par.user.SOC_need;
-% b2 = par.station.pow_max .* ones(N,1);
-% b3 = -par.station.pow_min .* ones(N,1);
-% A = [A1L A1R; A2L A2R; A3L A3R];
-% b = [b1; b2; b3];
-
 A1L = [zeros(1,N) -1]; A1R = zeros(1,N);
 A = [A1L A1R]; 
 b = -par.user.SOC_need;
