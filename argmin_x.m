@@ -1,12 +1,11 @@
 function xk = argmin_x(z,~,v)
 par = get_glob_par();
-Ts = par.Ts;
 N = par.N_flex;
 
 % cost function
-J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N*Ts) - z(1))).^2) + par.lambda.h_c * 1/z(3);
-            sum((par.station.pow_max*(par.TOU(1:N*Ts) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
-            sum((par.station.pow_max*(par.TOU(1:N*Ts) - z(2))).^2)],v); %h2
+J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N) - z(1))).^2) + par.lambda.h_c * 1/z(3)^2;
+            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2) + par.lambda.h_uc * 1/z(3)^2;
+            sum((par.station.pow_max*(par.TOU(1:N) - z(2))).^2)],v); %h2
 
 % inequality constraint
 % A1L = diag(ones(1,N+1)); A1R = zeros(N+1,N); A1L(end,end) = -1;
@@ -35,7 +34,7 @@ ub = [ub1;ub2];
 % equality constraints - system dynamics
 C1L = [1 zeros(1,N)]; C1R = zeros(1,N); % initial soc
 C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
-C2R = -diag(par.Ts*par.eff/par.user.batt_cap*ones(1,N));
+C2R = -diag(par.eff/par.user.batt_cap*ones(1,N));
 d1 = par.user.SOC_init; 
 d2 = zeros(N,1);
 
@@ -43,6 +42,6 @@ Aeq = [C1L C1R; C2L C2R];
 beq = [d1; d2];
 
 % solve optimization
-options = optimoptions('fmincon');
+options = optimoptions('fmincon','Display','off');
 xk = fmincon(J,par.x0,A,b,Aeq,beq,lb,ub,[],options);
 end
