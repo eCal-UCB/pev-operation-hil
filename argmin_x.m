@@ -18,23 +18,31 @@ J = @(x) dot([sum((x(N+2:end).*(par.TOU(1:N*Ts) - z(1))).^2) + par.lambda.h_c * 
 % A = [A1L A1R; A2L A2R; A3L A3R];
 % b = [b1; b2; b3];
 
+A1L = [zeros(1,N) -1]; A1R = zeros(1,N);
+A = [A1L A1R]; 
+b = -par.user.SOC_need;
+
+% lower bound - power min
 lb1 = zeros(N+1,1); lb1(end) = par.user.SOC_need;
 lb2 = par.station.pow_min.*ones(N,1);
 lb = [lb1;lb2];
 
+% upper bound - power max
 ub1 = ones(N+1,1); 
 ub2 = par.station.pow_max.*ones(N,1);
 ub = [ub1;ub2];
 
-% equality constraints
-C1L = zeros(1,N+1); C1R = zeros(1,N); C1L(1) = 1; 
+% equality constraints - system dynamics
+C1L = [1 zeros(1,N)]; C1R = zeros(1,N); % initial soc
 C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
-C2R = diag(par.Ts*par.eff/par.user.batt_cap*ones(1,N));
-d1 = par.user.SOC_init; d2 = zeros(N,1);
+C2R = -diag(par.Ts*par.eff/par.user.batt_cap*ones(1,N));
+d1 = par.user.SOC_init; 
+d2 = zeros(N,1);
+
 Aeq = [C1L C1R; C2L C2R];
 beq = [d1; d2];
 
 % solve optimization
 options = optimoptions('fmincon');
-xk = fmincon(J,par.x0,[],[],Aeq,beq,lb,ub,[],options);
+xk = fmincon(J,par.x0,A,b,Aeq,beq,lb,ub,[],options);
 end

@@ -21,7 +21,7 @@ par.pdf.visiting_rate = [];
 
 % user input
 par.user.SOC_init = 0.2;
-par.user.SOC_need = 0.5;
+par.user.SOC_need = 0.3;
 par.user.batt_cap = 100; % kwh
 par.user.duration = 10; % hrs
 
@@ -35,7 +35,7 @@ par.N_asap = ceil((par.user.SOC_need-par.user.SOC_init)...
 par.lambda.h_c = 10;
 par.lambda.h_uc = 10;
 par.mu = 1e4;
-par.soft_v_eta = 0.001;
+par.soft_v_eta = 0.001; % softening equality constraint for v
 
 % TOU price
 par.TOU = 2./cumsum(ones(par.user.duration,1));                               % TOU price

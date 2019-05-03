@@ -13,9 +13,9 @@ par = get_glob_par();
 
 
 %% Helper functions
-J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex*par.Ts) - z(1))).^2) + par.lambda.h_c * 1/z(3);
-            sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
-            sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2)],v);
+J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex*par.Ts) - z(1))).^2) + par.lambda.h_c * 1/z(3); % h_c
+            sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2) + par.lambda.h_uc * 1/z(3); % h_uc
+            sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2)],v); % h_l
 
         
 %% Run algorithm -- block coordinate descent
@@ -29,8 +29,8 @@ while count < itermax && residual > 1
     par.z0 = zk; par.x0 = xk; par.v0 = vk; set_glob_par(par);
     
     % update
-    xk = argmin_x(zk,[],vk);
     zk = argmin_z([],xk,vk);
+    xk = argmin_x(zk,[],vk);
     vk = argmin_v(zk,xk,[]);
     
     residual = abs(J(zk,xk,vk)-J0);
