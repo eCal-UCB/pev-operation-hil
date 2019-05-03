@@ -6,15 +6,18 @@
 % EE227C project, May 2019.
 
 clear; tic;
+
 %% Initialize parameters
 set_glob_par(init_params());
 par = get_glob_par();
+
 
 %% Helper functions
 J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex*par.Ts) - z(1))).^2) + par.lambda.h_c * 1/z(3);
             sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
             sum((par.station.pow_max*(par.TOU(1:par.N_asap*par.Ts) - z(2))).^2)],v);
 
+        
 %% Run algorithm -- block coordinate descent
 itermax = 1e4;
 count = 0; residual = 100;
@@ -37,7 +40,8 @@ while count < itermax && residual > 1
     end
 end
 
-fprintf('[ DONE] (%.2f sec) sum(vk) = %.2f\n',toc,sum(vk));
+fprintf('[ DONE] (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
+
 
 %% Visualization
 % TODO: what figures do we want to show?

@@ -27,7 +27,7 @@ ub2 = par.station.pow_max.*ones(N,1);
 ub = [ub1;ub2];
 
 % equality constraints
-C1L = zeros(1,N+1); C1R = zeros(1,N); C1L(1) = 1;
+C1L = zeros(1,N+1); C1R = zeros(1,N); C1L(1) = 1; 
 C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
 C2R = diag(par.Ts*par.eff/par.user.batt_cap*ones(1,N));
 d1 = par.user.SOC_init; d2 = zeros(N,1);

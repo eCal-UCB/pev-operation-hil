@@ -22,7 +22,7 @@ par.pdf.visiting_rate = [];
 % user input
 par.user.SOC_init = 0.2;
 par.user.SOC_need = 0.5;
-par.user.batt_cap = 24; % kwh
+par.user.batt_cap = 100; % kwh
 par.user.duration = 10; % hrs
 
 % problem specifications
