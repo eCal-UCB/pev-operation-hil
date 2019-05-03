@@ -20,16 +20,14 @@ J = @(z,x,v) dot([sum((x(par.N_flex+2:end).*(par.TOU(1:par.N_flex) - z(1))).^2) 
         
 %% Run algorithm -- block coordinate descent
 itermax = 1e4;
-count = 1; residual = 100;
+count = 0; improve = inf;
 zk = ones(4,1);                         % [z_c, z_uc, y, 1];
 xk = ones(2*par.N_flex+1,1);            % [soc0, ..., socN, u0, ..., uNm1];
 vk = 1/3*ones(3,1);                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
-while count < itermax && residual > par.opt.eps
-    Jk(count) = J(zk,xk,vk);
-    if mod(count,10) == 0
-        fprintf('[ SOLVING] iter: %d, cost: %.2f\n',count,Jk(count));
-    end
+while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
+    count = count + 1;
+    Jk(count) = J(zk,xk,vk);    
     
     % update init variables
     par.z0 = zk; par.x0 = xk; par.v0 = vk; set_glob_par(par);
@@ -39,9 +37,12 @@ while count < itermax && residual > par.opt.eps
     xk = argmin_x(zk,[],vk);
     vk = argmin_v(zk,xk,[]);
     
-    % update condition variables
-    residual = abs(J(zk,xk,vk)-Jk(count));
-    count = count + 1;
+    % compute residual
+    improve = Jk(count)-J(zk,xk,vk);
+    
+    if mod(count,1) == 0
+        fprintf('[ SOLVING] iter: %d, improve: %.3f\n',count,improve);
+    end
 end
 
 fprintf('[ DONE] (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
@@ -71,5 +72,6 @@ set(gca,'fontsize',15,'xticklabel',xticklabel_);
 figure(2)
 plot(Jk(Jk~=0),'linewidth',1.5);grid on;hold on;
 plot(1:length(Jk(Jk~=0)),Jk(length(Jk(Jk~=0)))*ones(size(Jk(Jk~=0))),'--r','linewidth',1.5); hold off;
+xlim([1,length(Jk(Jk~=0))]);
 xlabel('Iteration'); ylabel('Cost'); title('BCD Convergence');
 set(gca,'fontsize',15);
