@@ -6,22 +6,25 @@
 % EE227C project, May 2019.
 
 %% Initialization
-par = init_params();
-
+p = init_params();
+global par
+par = p;
+N = par.N;
 
 %% Run algorithm -- block coordinate descent
-% TODO: create matlab function for each choice -- to run fmincon
 itermax = 1e4;
 count = 0;
-xk = []; % TODO: put the values for the initialization
-zk = [];
-vk = [];
+xk = ones(2*N+1,1);         % [soc0, ..., socN, u0, ..., uNm1];
+zk = ones(4,1);             % [z_c, z_uc, y, 1];
+vk = 0.1*ones(3,1);         % [sm_c, sm_uc, sm_y];
+par.x0 = xk; par.z0 = zk; par.v0 = vk;
 while count < itermax
     % Update x -- fmincon with 
+    xk = argmin_x(zk,xk,vk);
     
     % Update z -- fmincon 
     
-    % Update v -- 
+    % Update v -- fmincon
     
 end
 
