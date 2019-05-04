@@ -1,6 +1,6 @@
-function varargout = set_glob_par(var)
-global par
-par = var;
+function varargout = set_glob_prb(var)
+global prb
+prb = var;
 
 if nargout == 0
     % do nothing
