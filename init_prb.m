@@ -8,6 +8,7 @@ if nargin == 0
     prb.user.SOC_need = 0.5;
     prb.user.batt_cap = 100; % kwh
     prb.user.duration = 8; % hrs
+    prb.user.overstay_duration = 2.5;
 elseif nargin == 1
     inp = varargin{1};
     prb.user.time     = inp.time;
@@ -15,6 +16,7 @@ elseif nargin == 1
     prb.user.SOC_need = inp.SOC_need;
     prb.user.batt_cap = inp.batt_cap;
     prb.user.duration = inp.duration;
+    prb.user.overstay_duration = inp.overstay_duration;
 end
 
 % problem specifications

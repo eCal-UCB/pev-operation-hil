@@ -13,6 +13,7 @@ par = set_glob_par(init_params());
 prb = set_glob_prb(init_prb());
 disp('[ INIT] DONE');
 
+
 %% Functions
 J = @(z,x,v) dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3); % h_c
             sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3); % h_uc

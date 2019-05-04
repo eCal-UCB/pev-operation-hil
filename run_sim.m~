@@ -1,0 +1,173 @@
+% This script is to simulate EV charging station operations where the
+% charging tariff is determined real-time with taking account into EV
+% drivers' behaviors. The overall objective of the tariff control is to
+% minimize the operation cost of the system operater. 
+%
+% There are three choices that each EV driver can make at arrival:
+% (i) charging with flexibility, (ii) charging as soon as possible, and
+% (iii) leaving without charging.
+%
+% At each arrival of EV driver, user specific parameters, e.g., battery
+% capacity, desired parking durations, initial SOC, and needed SOC level
+% (for next mobility demand) are randomly sampled from an empirical
+% probability distribution function that is generated with TELD dataset 
+% [X].
+%
+% THIS WORK IS A PART OF EE227C COURSE PROJECT AT UC BERKELEY.
+% last modified, May 2019.
+%
+% Contributors: Sangjae Bae, Teng Zeng, Bertrand Travacca.
+
+clear
+%% Initialization
+disp('[ INIT] initializing...');
+par = set_glob_par(init_params());
+disp('[ INIT] DONE');
+
+
+%% Simulation
+t = par.sim.starttime:par.Ts:par.sim.endtime;
+i = 0; 
+sim = init_sim(t); % simulation result
+station = containers.Map; % station monitor
+station('num_occupied_pole') = 0; 
+
+for k = par.sim.starttime:par.Ts:par.sim.endtime
+    i = i+1;
+    
+    % random visit
+    rv = rand;
+    if rv <= interp1(0:23,par.pdf.visit,k)
+        sim.tot_visit = sim.tot_visit + 1;
+       % TODO: sample values from pdf
+       inp.time = k;
+       inp.SOC_init = 0.2;
+       inp.SOC_need = 0.4; % add infeasible scenario
+       inp.batt_cap = 24;
+       inp.duration = 3;
+       inp.overstay_duration = 2.3;
+       set_glob_prb(init_prb(inp));
+       
+       if inp.duration >= par.sim.endtime - k
+           break;
+       end
+       
+       % find optimal tariff
+       opt = run_opt();
+       
+       % driver makes choice
+       rc = rand;
+       if rc <= opt.prob.flex
+           opt.choice = 0; % charging with flexibility
+           opt.time.end = opt.time.end_flex;
+           opt.powers = opt.flex.powers;
+           opt.price = opt.tariff.flex;
+       elseif rc <= opt.prob.flex + opt.prob.asap
+           opt.choice = 1; % charging as soon as possible
+           opt.time.end = opt.time.end_asap;
+           opt.powers = opt.asap.powers;
+           opt.price = opt.tariff.asap;
+       else
+           opt.choice = 2; % leaving without charging
+       end
+       sim.choice_probs(i,:) = opt.v;
+       sim.choice(i) = opt.choice;
+       fprintf('[ EVENT] time = %.2f, CHOICE = %s\n',k,par.dcm.choices{opt.choice+1});
+       % if the driver chooses to charge EV
+       if opt.choice <= 1
+           [opt.time.leave, duration] = get_rand_os_duration(opt);
+           sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
+           station('num_occupied_pole') = station('num_occupied_pole') + 1;
+           station(['EV' num2str(sim.tot_visit)]) = opt;
+       end
+    end
+    
+    % update agg
+    keys = station.keys();
+    if ~isempty(keys)
+        for ev = keys
+            if contains(ev{1},'EV')
+                if  k <= station(ev{1}).time.end % is charging duration
+                    TOU = interp1(0:23,par.TOU,k,'nearest');
+                    if length(station(ev{1}).powers) > 1
+                        power = interp1(linspace(station(ev{1}).time.start, ...
+                                            station(ev{1}).time.end,...
+                                            length(station(ev{1}).powers)), ...
+                                            station(ev{1}).powers, k);
+                    elseif length(station(ev{1}).powers) == 1
+                        power = station(ev{1}).powers;
+                    end
+                    
+                    sim.power(i) = sim.power(i) + power;
+                    sim.profit(i) = sim.profit(i) + par.Ts * power * (station(ev{1}).price - TOU);
+                    sim.charging(i) = sim.charging(i) + 1;
+                else % is overstaying
+                    if k <= station(ev{1}).time.leave 
+                        sim.profit(i) = sim.profit(i) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.overstay(i) = sim.overstay(i) + 1;
+                    else
+                        station.remove(ev{1});
+                        station('num_occupied_pole') = station('num_occupied_pole') - 1;
+                    end 
+                end
+            elseif contains(ev{1},'occ')
+                sim.occ(i) = station('num_occupied_pole');
+            end
+        end
+    end
+end
+
+
+%% Visualization
+figure(1); num_subplot = 4; count = 1;
+subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
+plot(t,sim.power,'linewidth',1.5); xlim([t(1) t(end)]);
+grid on; xlabel('hour of the day'); ylabel('power (kW)');
+set(gca,'fontsize',15);
+
+subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
+plot(t,sim.profit,'linewidth',1.5); hold on;
+plot(t,cumsum(sim.profit),'linewidth',1.5); hold off; xlim([t(1) t(end)]);
+grid on; xlabel('hour of the day'); ylabel('profit ($)');
+legend('instant','net')
+set(gca,'fontsize',15);
+
+subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
+plot(t,sim.occ,'linewidth',1.5); hold on;
+plot(t,sim.overstay,'linewidth',1.5);
+plot(t,sim.charging,'linewidth',1.5); hold off;
+xlim([t(1) t(end)]); legend('total','overstay','charging');
+grid on; xlabel('hour of the day'); ylabel('# of vehicles');
+set(gca,'fontsize',15); 
+
+subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
+plot(t,cumsum(sim.overstay_duration),'linewidth',1.5); xlim([t(1) t(end)]);
+grid on; set(gca,'fontsize',15); xlabel('hour of the day'); ylabel([{'overstay duration'}, {'(hours)'}]);
+
+
+figure(2); 
+choices = sim.choice(~isnan(sim.choice));
+choice_probs = sim.choice_probs(sim.choice_probs(:,1)~=0,:);
+choice_labels = zeros(length(choices),1);
+for j = 1:length(choice_labels)
+    choice_labels(j) = (choices(j)==0)*1/2*choice_probs(j,1) ...
+                       + (choices(j)==1)*(choice_probs(j,1)+1/2*choice_probs(j,2))...
+                       + (choices(j)==2)*(choice_probs(j,1)+choice_probs(j,2)+1/2*choice_probs(j,3));
+end
+area(1:length(find(sim.choice_probs(:,1))), sim.choice_probs(sim.choice_probs(:,1)~=0,:)); hold on;
+text(1.5,choice_probs(1,1)-0.04,'charging flex','fontsize',15,'color','white');
+text(1.5,sum(choice_probs(1,1:2))-0.04,'charging asap','fontsize',15,'color','white');
+text(1.5,sum(choice_probs(1,1:3))-0.04,'leaving without charging','fontsize',15,'color','white');
+h = scatter(1:length(choices), choice_labels,'k','filled'); hold off;
+xlabel('event#'); ylabel('probability [0,1]'); title([{'Choice Probabilities and Decisions '},{sprintf('(total: %d, flex: %d, asap: %d, leave: %d)',length(choice_labels),sum(choice_labels==0))}]);
+xlim([1,length(find(sim.choice_probs(:,1)))]); ylim([0,1]);
+legend(h,{'choice'})
+set(gca,'fontsize',15);
+
+% pareto chart overstay duration vs. profits with different reg params for
+% overstaying
+
+% pareto chart avg overstay penalty vs. profits
+
+% (i) overstaying duration (ii) profits with vs. without controller
+
