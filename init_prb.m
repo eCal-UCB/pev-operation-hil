@@ -10,7 +10,7 @@ if nargin == 0
     prb.user.duration = 8; % hrs
 elseif nargin == 1
     inp = varargin{1};
-    prb.user.time     = inp.user.time;
+    prb.user.time     = inp.time;
     prb.user.SOC_init = inp.SOC_init;
     prb.user.SOC_need = inp.SOC_need;
     prb.user.batt_cap = inp.batt_cap;

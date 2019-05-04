@@ -1,4 +1,5 @@
 function opt = run_opt()
+tic;
 par = get_glob_par();
 prb = get_glob_prb();
 
@@ -30,9 +31,9 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     % compute residual
     improve = Jk(count)-J(zk,xk,vk);
     
-    if mod(count,1) == 0
-        fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
-    end
+%     if mod(count,1) == 0
+%         fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
+%     end
 end
 
 opt.z = zk;
@@ -42,10 +43,15 @@ opt.os_penalty = zk(3);
 opt.x = xk;
 opt.flex.SOCs = xk(1:prb.N_flex+1);
 opt.flex.powers = xk(prb.N_flex+2:end);
+opt.asap.powers = par.station.pow_max;
 opt.v = vk;
 opt.prob.flex = vk(1);
 opt.prob.asap = vk(2);
 opt.prob.leave = vk(3);
+
+opt.time.start = prb.user.time;
+opt.time.end_flex = prb.user.time + prb.user.duration;
+opt.time.end_asap = prb.user.time + prb.N_asap*par.Ts;
 
 fprintf('[ OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
 end

@@ -21,6 +21,7 @@ par.station.pow_max = 7.2;                  % kw
 par.eff = 0.89;                             % power efficiency
 
 % dcm params
+par.dcm.choices = [{'charging with flexibility'},{'charging asap'},{'leaving without charging'}];
 par.dcm.charging_flex.params = [-0.01 0 0 1]';          % DCM parameters for choice 1 -- charging with flexibility 
 par.dcm.charging_asap.params = [0 -0.01 0 1.5]';          % DCM parameters for choice 2 -- charging as soon as possible
 par.dcm.leaving.params       = [0 0 0.01 0]';           % DCM parameters for choice 3 -- leaving without charging
@@ -29,7 +30,12 @@ par.THETA = [par.dcm.charging_flex.params';
              par.dcm.leaving.params'];
 
 % pdfs
-par.pdf.visiting_rate = [];
+par.pdf.visit = [0.1*ones(1,7) ...    % 0-7
+                 0.5*ones(1,5) ...    % 7-12
+                 0.2*ones(1,2) ...    % 12-14
+                 0.2*ones(1,2) ...    % 14-16
+                 0.2*ones(1,6) ...    % 16-22
+                 0.001*ones(1,2)];    % 22-24
 
 % regularization params
 par.lambda.h_c = 3;

@@ -19,8 +19,8 @@ J = @(z) dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2) + pa
 A = [1 -1 0 0]; b = 0;
      
 % lower and upper bound
-lb = eps .* ones(4,1);
-ub = 3 .* max(prb.TOU) .* ones(4,1);
+lb = [2 * max(prb.TOU) .* ones(3,1); 0];
+ub = 30 .* max(prb.TOU) .* ones(4,1);
 
 % equality constraint
 Aeq = [0 0 0 1]; beq = 1;
