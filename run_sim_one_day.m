@@ -1,3 +1,4 @@
+function varargout = run_sim_one_day(varargin)
 % This script is to simulate EV charging station operations where the
 % charging tariff is determined real-time with taking account into EV
 % drivers' behaviors. The overall objective of the tariff control is to
@@ -18,13 +19,18 @@
 %
 % Contributors: Sangjae Bae, Teng Zeng, Bertrand Travacca.
 
-clear
+% clear
 %% Initialization
-disp('[ INIT] initializing...');
-par = set_glob_par(init_params());
-disp('[ INIT] DONE');
+fprintf('[%s INIT] initializing...\n',datetime('now'));
+if nargin == 0
+    par = set_glob_par(init_params());
+elseif nargin == 1
+    par = varargin{1};
+else
+    error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
+end
 
-
+fprintf('[%s INIT] DONE\n',datetime('now'));
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime;
 i = 0; 
@@ -54,6 +60,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
        
        % find optimal tariff
        opt = run_opt();
+       sim.opts{i} = opt;
        
        % driver makes choice
        rc = rand;
@@ -72,7 +79,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
        end
        sim.choice_probs(i,:) = opt.v;
        sim.choice(i) = opt.choice;
-       fprintf('[ EVENT] time = %.2f, CHOICE = %s\n',k,par.dcm.choices{opt.choice+1});
+       sim.control(i,:) = opt.z(1:3);
+       fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
        % if the driver chooses to charge EV
        if opt.choice <= 1
            [opt.time.leave, duration] = get_rand_os_duration(opt);
@@ -117,8 +125,14 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     end
 end
 
+varargout = {};
+varargout{1} = sim;
 
 %% Visualization
-options = vis_sim_one_day(); % options: display, temporals, choices
-options.temporals = false;
-vis_sim_one_day(sim,options);
+if nargout == 0
+    options = vis_sim_one_day(); % options: display, temporals, choices
+    options.temporals = true;
+    vis_sim_one_day(sim,options);
+end
+
+end

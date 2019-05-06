@@ -9,4 +9,6 @@ sim.choice = nan*ones(size(t));
 sim.choice_probs = zeros(length(t),3);
 sim.tot_visit = 0;
 sim.t = t;
+sim.control = zeros(length(t),3);
+sim.opts = cell(size(t));
 end

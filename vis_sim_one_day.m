@@ -23,11 +23,14 @@ sim = varargin{1};
 if options.display
     if options.temporals
         figure; num_subplot = 4; count = 1;
+        
+        % power consumption
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
         plot(sim.t,sim.power,'linewidth',1.5); xlim([sim.t(1) sim.t(end)]);
         grid on; xlabel('hour of the day'); ylabel('power (kW)');
         set(gca,'fontsize',15);
-
+        
+        % profit
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
         plot(sim.t,sim.profit,'linewidth',1.5); hold on;
         plot(sim.t,cumsum(sim.profit),'linewidth',1.5); hold off; xlim([sim.t(1) sim.t(end)]);
@@ -35,6 +38,7 @@ if options.display
         legend('instant','net')
         set(gca,'fontsize',15);
 
+        % occupancy
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
         plot(sim.t,sim.occ,'linewidth',1.5); hold on;
         plot(sim.t,sim.overstay,'linewidth',1.5);
@@ -43,6 +47,7 @@ if options.display
         grid on; xlabel('hour of the day'); ylabel('# of vehicles');
         set(gca,'fontsize',15); 
 
+        % overstay duration
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
         plot(sim.t,cumsum(sim.overstay_duration),'linewidth',1.5); xlim([sim.t(1) sim.t(end)]);
         grid on; set(gca,'fontsize',15); xlabel('hour of the day'); ylabel([{'overstay duration'}, {'(hours)'}]);
