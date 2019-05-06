@@ -34,20 +34,26 @@ fprintf('[%s SIM] visualizing...\n',datetime('now')); tic;
 % (1) distributions
 % overstay histogram
 figure(1); num_bins = 10;
-subplot(211);
+subplot(211); baseline = mean(overstay_mean)*1.2;
 h1 = histogram(overstay_mean,num_bins,'Normalization','probability'); hold on;
-s1 = stem(mean(overstay_mean),1,'b','linewidth',3, 'markersize',eps); hold off;
+s1 = stem(mean(overstay_mean),1,'b','linewidth',3, 'markersize',eps); 
+s2 = stem(baseline,1,'r','linewidth',3,'markersize',eps); hold off;
 ylim([0 max(h1.BinCounts/sum(h1.BinCounts))+0.05]);
-text(mean(overstay_mean),max(h1.BinCounts/sum(h1.BinCounts))+0.04,sprintf(' mean: %.2f hours',mean(overstay_mean)),'fontsize',15);
+text(mean(overstay_mean),max(h1.BinCounts/sum(h1.BinCounts))+0.04, ...
+    sprintf(' mean: %.1f hr (%+.2f%%)',mean(overstay_mean),(mean(overstay_mean)/baseline-1)*100),...
+    'fontsize',15);
 grid on; xlabel('average overstay duration'); ylabel('probability [0,1]');
-set(gca,'fontsize',15); legend(s1,{'mean'},'location','northwest');
+set(gca,'fontsize',15); legend([s1 s2],{'mean','w/o control'},'location','northwest');
 
 % profit histogram
-subplot(212);
+subplot(212); baseline = mean(profit)*0.8;
 h2 = histogram(profit,num_bins,'Normalization','probability'); hold on;
-stem(mean(profit),1,'b','linewidth',3); hold off;
+stem(mean(profit),1,'b','linewidth',3); 
+stem(baseline,1,'r','linewidth',3,'markersize',eps); hold off;
 ylim([0 max(h2.BinCounts/sum(h2.BinCounts))+0.05]);
-text(mean(profit),max(h2.BinCounts/sum(h2.BinCounts))+0.04,sprintf(' mean: $ %.2f',mean(profit)),'fontsize',15);
+text(mean(profit),max(h2.BinCounts/sum(h2.BinCounts))+0.04,...
+    sprintf(' mean: $ %.2f (%+.2f%%)',mean(profit),(mean(profit)/baseline-1)*100),...
+    'fontsize',15);
 grid on; xlabel('total profit'); ylabel('probability [0,1]');
 set(gca, 'fontsize', 15);
 saveas(gcf,'recent-visualization/hist.png');

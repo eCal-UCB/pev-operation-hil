@@ -2,7 +2,7 @@ function vis_sim_one_event(opt)
 xticklabel_ = {'Flex, z_{c}';'ASAP, z_{uc}';'Overstay, y'};
 
 % simulation result
-figure;
+figure('position',[1,1,640,704]);
 subplot(411)
 plot(opt.prb.user.time:opt.par.Ts:opt.prb.user.time+opt.prb.user.duration-opt.par.Ts, opt.x(opt.prb.N_flex+2:end),'linewidth',1.5); grid on;
 xlabel('opt.parking durations (hour)'); ylabel('kW'); set(gca,'fontsize',15);

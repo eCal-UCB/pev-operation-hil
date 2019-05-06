@@ -22,7 +22,7 @@ end
 sim = varargin{1};
 if options.display
     if options.temporals
-        figure; num_subplot = 4; count = 1;
+        figure('position',[1,1,640,704]); num_subplot = 4; count = 1;
         
         % power consumption
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
