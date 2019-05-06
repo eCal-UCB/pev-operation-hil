@@ -1,7 +1,8 @@
-% This script is to generate a distribution of operation simulation results
-% for optimal EV charging station control. 
+% This script is to generate a distribution of EV charging station
+% operation simulations.
 %
 % THIS IS A PART OF EE227C COURSE PROJECT AT UC BERKELEY.
+% Contributors: Sangjae Bae, Teng Zeng, Bertrand Travacca.
 % May, 2019.
 
 close all; clear;
@@ -10,7 +11,9 @@ num_sim = 10; % simulation numbers
 %% Simulation
 t0 = tic;
 sim_results = cell(num_sim,1);
+fname = fullfile(pwd,'monte-sim-results',sprintf('%s monte-sim-%d-eps.mat',datetime('now'),num_sim));
 for n = 1:num_sim
+    save(fname);
     fprintf('======================== %d/%d =======================\n',...
         n,num_sim);
     t1= tic;
@@ -19,7 +22,7 @@ for n = 1:num_sim
 end
 tot_time = toc(t0);
 fprintf('[%s SIM] total computation time: %.2f sec\n',datetime('now'), tot_time);
-save(fullfile(pwd,'monte-sim-results',sprintf('%s monte-sim.mat',datetime('now'))));
+save(fname);
 
 %% Visualization
 vis_sim_monte(sim_results);
