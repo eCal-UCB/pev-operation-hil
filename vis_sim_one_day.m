@@ -51,6 +51,10 @@ if options.display
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
         plot(sim.t,cumsum(sim.overstay_duration),'linewidth',1.5); xlim([sim.t(1) sim.t(end)]);
         grid on; set(gca,'fontsize',15); xlabel('hour of the day'); ylabel([{'overstay duration'}, {'(hours)'}]);
+        
+        saveas(gcf,'recent-visualization/sim_one_day_temporal.png');
+        saveas(gcf,'recent-visualization/sim_one_day_temporal.fig');
+        saveas(gcf,'recent-visualization/sim_one_day_temporal','epsc');
     end
     
     if options.choices
@@ -79,6 +83,10 @@ if options.display
         xlim([1,length(find(sim.choice_probs(:,1)))]); ylim([0,1]);
         legend(h,{'choice'})
         set(gca,'fontsize',15);
+        
+        saveas(gcf,'recent-visualization/sim_one_day_choice.png');
+        saveas(gcf,'recent-visualization/sim_one_day_choice.fig');
+        saveas(gcf,'recent-visualization/sim_one_day_choice','epsc');
     end
 end
 end

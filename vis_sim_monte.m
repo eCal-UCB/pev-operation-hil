@@ -50,6 +50,9 @@ ylim([0 max(h2.BinCounts/sum(h2.BinCounts))+0.05]);
 text(mean(profit),max(h2.BinCounts/sum(h2.BinCounts))+0.04,sprintf(' mean: $ %.2f',mean(profit)),'fontsize',15);
 grid on; xlabel('total profit'); ylabel('probability [0,1]');
 set(gca, 'fontsize', 15);
+saveas(gcf,'recent-visualization/hist.png');
+saveas(gcf,'recent-visualization/hist.fig');
+saveas(gcf,'recent-visualization/hist','epsc');
 
 
 % (2) one day simulation results
@@ -68,7 +71,9 @@ xlabel('mean overstay penalty ($)'); ylabel('profit ($)');
 subplot(122);scatter(overstay_penalty_mean,overstay_mean,'filled'); grid on; set(gca,'fontsize',15);
 xlabel('mean overstay penalty ($)'); ylabel('mean overstay duration (hour)');
 sgtitle([{'Pareto Chart'},{sprintf('(total number of simulations: %d)',length(sim_results))}],'fontsize',18);
-
+saveas(gcf,'recent-visualization/pareto.png');
+saveas(gcf,'recent-visualization/pareto.fig');
+saveas(gcf,'recent-visualization/pareto','epsc');
 
 % (4) convergence rate of BCD
 ind_events = find(~isnan(sim_results{day}.choice));

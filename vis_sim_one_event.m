@@ -15,6 +15,10 @@ set(gca,'fontsize',15,'xticklabel',xticklabel_);
 subplot(414)
 bar(opt.v); grid on; ylabel('Probability')
 set(gca,'fontsize',15,'xticklabel',xticklabel_);
+saveas(gcf,'recent-visualization/one_event.png');
+saveas(gcf,'recent-visualization/one_event.fig');
+saveas(gcf,'recent-visualization/one_event','epsc');
+
 
 % convergence analysis
 figure;
@@ -23,4 +27,7 @@ plot(1:length(opt.J(opt.J~=0)),opt.J(length(opt.J(opt.J~=0)))*ones(size(opt.J(op
 xlim([1,length(opt.J(opt.J~=0))]);
 xlabel('Iteration'); ylabel('Cost'); title([{'BCD Convergence'},sprintf('(total iter: %d)',opt.num_iter)]);
 set(gca,'fontsize',15);
+saveas(gcf,'recent-visualization/convergence.png');
+saveas(gcf,'recent-visualization/convergence.fig');
+saveas(gcf,'recent-visualization/convergence','epsc');
 end
