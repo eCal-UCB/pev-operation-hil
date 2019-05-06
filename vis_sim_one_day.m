@@ -52,9 +52,9 @@ if options.display
         plot(sim.t,cumsum(sim.overstay_duration),'linewidth',1.5); xlim([sim.t(1) sim.t(end)]);
         grid on; set(gca,'fontsize',15); xlabel('hour of the day'); ylabel([{'overstay duration'}, {'(hours)'}]);
         
-        saveas(gcf,'recent-visualization/sim_one_day_temporal.png');
-        saveas(gcf,'recent-visualization/sim_one_day_temporal.fig');
-        saveas(gcf,'recent-visualization/sim_one_day_temporal','epsc');
+        saveas(gcf,'recent-visualization/one_day_temporal.png');
+        saveas(gcf,'recent-visualization/one_day_temporal.fig');
+        saveas(gcf,'recent-visualization/one_day_temporal','epsc');
     end
     
     if options.choices
@@ -84,9 +84,9 @@ if options.display
         legend(h,{'choice'})
         set(gca,'fontsize',15);
         
-        saveas(gcf,'recent-visualization/sim_one_day_choice.png');
-        saveas(gcf,'recent-visualization/sim_one_day_choice.fig');
-        saveas(gcf,'recent-visualization/sim_one_day_choice','epsc');
+        saveas(gcf,'recent-visualization/one_day_choice.png');
+        saveas(gcf,'recent-visualization/one_day_choice.fig');
+        saveas(gcf,'recent-visualization/one_day_choice','epsc');
     end
 end
 end
