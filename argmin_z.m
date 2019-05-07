@@ -10,17 +10,21 @@ end
 lse = @(z) log(exp(dot(par.THETA(1,:),z))+exp(dot(par.THETA(2,:),z))+exp(dot(par.THETA(3,:),z)));
 
 % cost function
-J = @(z) dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3);
-            sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
-            sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2)],v) ...
+% J = @(z) dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3);
+%             sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3);
+%             1/3*sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - 0)).^2)],v) ...
+%          + par.mu * (lse(z) - z' * par.THETA' * v);
+J = @(z) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);
+            sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))+par.lambda.z_uc*z(2)^2) + par.lambda.h_uc * 1/z(3);
+            1/3*sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0))],v) ...
          + par.mu * (lse(z) - z' * par.THETA' * v);
      
 % inequality constratins
-A = [1 -1 0 0]; b = 0;
+A = [1 -1 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
-lb = [2 * max(prb.TOU) .* ones(3,1); 0];
-ub = 30 .* max(prb.TOU) .* ones(4,1);
+lb = [min(prb.TOU) .* ones(3,1); 0];
+ub = 2.* max(prb.TOU) .* ones(4,1);
 
 % equality constraint
 Aeq = [0 0 0 1]; beq = 1;

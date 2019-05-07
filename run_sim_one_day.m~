@@ -24,13 +24,10 @@ function varargout = run_sim_one_day(varargin)
 fprintf('[%s INIT] initializing...\n',datetime('now'));
 if nargin == 0
     par = set_glob_par(init_params());
-    events = gen_events_one_day();
 elseif nargin == 1
     par = varargin{1};
-    events = gen_events_one_day();
 elseif nargin == 2
     par = varargin{1};
-    events = varargin{2};
 else
     error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
 end
@@ -42,54 +39,59 @@ i = 0;
 sim = init_sim(t); % simulation result
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
-ind_event = 1;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
     i = i+1;
     
-    % check visit
-    if ind_event <= length(events.time)
-        if ceil(events.time(ind_event)/par.Ts)*par.Ts == k
-           if events.inp{ind_event}.duration >= par.sim.endtime - k
-               break;
-           end
-           set_glob_prb(init_prb(events.inp{ind_event}));
-
-           % find optimal tariff
-           opt = run_opt();
-           sim.opts{i} = opt;
-
-           % driver makes choice
-           rc = rand;
-           if rc <= opt.prob.flex
-               opt.choice = 0; % charging with flexibility
-               opt.time.end = opt.time.end_flex;
-               opt.powers = opt.flex.powers;
-               opt.price = opt.tariff.flex;
-           elseif rc <= opt.prob.flex + opt.prob.asap
-               opt.choice = 1; % charging as soon as possible
-               opt.time.end = opt.time.end_asap;
-               opt.powers = opt.asap.powers;
-               opt.price = opt.tariff.asap;
-           else
-               opt.choice = 2; % leaving without charging
-           end
-           sim.choice_probs(i,:) = opt.v;
-           sim.choice(i) = opt.choice;
-           sim.control(i,:) = opt.z(1:3);
-           fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
-           
-           % if the driver chooses to charge EV
-           if opt.choice <= 1
-               [opt.time.leave, duration] = get_rand_os_duration(opt);
-               sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
-               station('num_occupied_pole') = station('num_occupied_pole') + 1;
-               station(['EV' num2str(sim.tot_visit)]) = opt;
-           end
-           
-           sim.tot_visit = sim.tot_visit + 1;
-           ind_event = ind_event + 1;
-        end
+    % random visit
+    rv = rand;
+    if rv <= interp1(0:23,par.pdf.visit,k)
+        sim.tot_visit = sim.tot_visit + 1;
+       % TODO: sample values from pdf
+       inp.time = k;
+       inp.SOC_init = 0.2;
+       inp.SOC_need = 0.4; % add infeasible scenario
+       inp.batt_cap = 24;
+       inp.duration = 3;
+       inp.overstay_duration = 2.3;
+       inp.pow_max = 3.2;
+       inp.pow_min = 0;
+       set_glob_prb(init_prb(inp));
+       
+       if inp.duration >= par.sim.endtime - k
+           break;
+       end
+       
+       % find optimal tariff
+       opt = run_opt();
+       sim.opts{i} = opt;
+       
+       % driver makes choice
+       rc = rand;
+       if rc <= opt.prob.flex
+           opt.choice = 0; % charging with flexibility
+           opt.time.end = opt.time.end_flex;
+           opt.powers = opt.flex.powers;
+           opt.price = opt.tariff.flex;
+       elseif rc <= opt.prob.flex + opt.prob.asap
+           opt.choice = 1; % charging as soon as possible
+           opt.time.end = opt.time.end_asap;
+           opt.powers = opt.asap.powers;
+           opt.price = opt.tariff.asap;
+       else
+           opt.choice = 2; % leaving without charging
+       end
+       sim.choice_probs(i,:) = opt.v;
+       sim.choice(i) = opt.choice;
+       sim.control(i,:) = opt.z(1:3);
+       fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+       % if the driver chooses to charge EV
+       if opt.choice <= 1
+           [opt.time.leave, duration] = get_rand_os_duration(opt);
+           sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
+           station('num_occupied_pole') = station('num_occupied_pole') + 1;
+           station(['EV' num2str(sim.tot_visit)]) = opt;
+       end
     end
     
     % update agg
