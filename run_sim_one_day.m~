@@ -52,8 +52,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
         if any(round(events.time/par.Ts)*par.Ts == k)
             inds_event = find(round(events.time/par.Ts)*par.Ts == k);
             for j = 1:length(inds_event)
-                if events.inp{inds_event(j)}.duration < par.sim.endtime - k
-                   set_glob_prb(init_prb(events.inp{inds_event(j)}));
+                if events.inp{ind_event}.duration < par.sim.endtime - k
+                   set_glob_prb(init_prb(events.inp{ind_event}));
 
                    % find optimal tariff
                    opt = run_opt();
@@ -87,8 +87,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        station(['EV' num2str(sim.tot_visit)]) = opt;
                    end
                    sim.tot_visit = sim.tot_visit + 1;
-                end
-               ind_event = ind_event + 1;
+               end
             end
         end
     end

@@ -16,6 +16,9 @@ events.time = zeros(num_events,1);
 
 for i = 1:num_events
     n = event_idx(i); % specify event index 
+    if act_data{n, 7} < 0.5
+        continue
+    end
     event.time = act_data{n, 2}; 
     event.SOC_init = act_data{n, 3};
     event.SOC_need = act_data{n, 4}; % add infeasible scenario

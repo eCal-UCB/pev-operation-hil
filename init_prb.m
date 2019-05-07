@@ -13,12 +13,12 @@ if nargin == 0
     prb.station.pow_min = par.station.pow_min;
 elseif nargin == 1
     event = varargin{1};
-    prb.user.time     = ceil(event.time/par.Ts)*par.Ts;
+    prb.user.time     = round(event.time/par.Ts)*par.Ts;
     prb.user.SOC_init = event.SOC_init;
     prb.user.SOC_need = event.SOC_need;
     prb.user.batt_cap = event.batt_cap;
-    prb.user.duration = ceil(event.duration/par.Ts)*par.Ts;
-    prb.user.overstay_duration = ceil(event.overstay_duration/par.Ts)*par.Ts;
+    prb.user.duration = round(event.duration/par.Ts)*par.Ts;
+    prb.user.overstay_duration = round(event.overstay_duration/par.Ts)*par.Ts;
     prb.station.pow_max = event.pow_max;
     prb.station.pow_min = event.pow_min;
 end
