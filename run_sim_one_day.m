@@ -38,7 +38,6 @@ end
 fprintf('[%s INIT] DONE\n',datetime('now'));
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime;
-i = 0; 
 sim = init_sim(t); % simulation result
 sim.events = events;
 station = containers.Map; % station monitor
@@ -46,19 +45,17 @@ station('num_occupied_pole') = 0;
 ind_event = 1;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
-    i = i+1;
-    
     % check visit
     if ind_event <= length(events.time)
         if any(round(events.time/par.Ts)*par.Ts == k)
             inds_event = find(round(events.time/par.Ts)*par.Ts == k);
             for j = 1:length(inds_event)
-                if events.inp{inds_event(j)}.duration < par.sim.endtime - k
+                if events.inp{inds_event(j)}.duration <= par.sim.endtime - k
                    set_glob_prb(init_prb(events.inp{inds_event(j)}));
 
                    % find optimal tariff
                    opt = run_opt();
-                   sim.opts{i} = opt;
+                   sim.opts{ind_event} = opt;
 
                    % driver makes choice
                    rc = rand;
@@ -75,19 +72,21 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    else
                        opt.choice = 2; % leaving without charging
                    end
-                   sim.choice_probs(i,:) = opt.v;
-                   sim.choice(i) = opt.choice;
-                   sim.control(i,:) = opt.z(1:3);
+                   sim.choice_probs(ind_event,:) = opt.v;
+                   sim.choice(ind_event) = opt.choice;
+                   sim.control(ind_event,:) = opt.z(1:3);
                    fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
 
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
-                       sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
+                       sim.overstay_duration(ind_event) = sim.overstay_duration(ind_event) + duration;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
                        station(['EV' num2str(sim.tot_visit)]) = opt;
                    end
                    sim.tot_visit = sim.tot_visit + 1;
+                else
+                    disp('SKIPPED');
                 end
                 ind_event = ind_event + 1;
             end
@@ -110,20 +109,20 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                         power = station(ev{1}).powers;
                     end
                     
-                    sim.power(i) = sim.power(i) + power;
-                    sim.profit(i) = sim.profit(i) + par.Ts * power * (station(ev{1}).price - TOU);
-                    sim.charging(i) = sim.charging(i) + 1;
+                    sim.power(ind_event) = sim.power(ind_event) + power;
+                    sim.profit(ind_event) = sim.profit(ind_event) + par.Ts * power * (station(ev{1}).price - TOU);
+                    sim.charging(ind_event) = sim.charging(ind_event) + 1;
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
-                        sim.profit(i) = sim.profit(i) + par.Ts * station(ev{1}).tariff.overstay;
-                        sim.overstay(i) = sim.overstay(i) + 1;
+                        sim.profit(ind_event) = sim.profit(ind_event) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.overstay(ind_event) = sim.overstay(ind_event) + 1;
                     else
                         station.remove(ev{1});
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;
                     end 
                 end
             elseif contains(ev{1},'occ')
-                sim.occ(i) = station('num_occupied_pole');
+                sim.occ(ind_event) = station('num_occupied_pole');
             end
         end
     end

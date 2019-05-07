@@ -67,7 +67,7 @@ if options.display
                                + (choices(j)==1)*(choice_probs(j,1)+1/2*choice_probs(j,2))...
                                + (choices(j)==2)*(choice_probs(j,1)+choice_probs(j,2)+1/2*choice_probs(j,3));
         end
-        area(1:length(choice_probs), choice_probs); hold on;
+        area(1:length(choice_probs), sim.choice_probs(sim.choice_probs(:,1)~=0,:)); hold on;
         text(1.5,choice_probs(1,1)-0.04,'charging flex','fontsize',15,'color','white');
         text(1.5,sum(choice_probs(1,1:2))-0.04,'charging asap','fontsize',15,'color','white');
         text(1.5,sum(choice_probs(1,1:3))-0.04,'leaving without charging','fontsize',15,'color','white');

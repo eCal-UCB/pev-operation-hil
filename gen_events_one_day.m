@@ -1,10 +1,12 @@
 function events = gen_events_one_day()
+par = get_glob_par();
 % randomly generates a sequence of events
 % TODO: generate events in order of ascending time.
 
 act_data = readtable('real_act_data.csv');
 
 num_events = 30;
+par.num_events = num_events; set_glob_par(par);
 % rng(1)
 event_idx = sort(randi([1 height(act_data)], 1, num_events));
 
