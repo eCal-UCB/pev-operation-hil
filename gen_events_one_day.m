@@ -7,7 +7,7 @@ events.inp = cell(num_events,1);
 events.time = zeros(num_events,1);
 
 % test data -- to be removed
-test_times = [1:num_events] + 7;
+test_times = [0:0.5:num_events] + 12;
 
 
 for n = 1:num_events

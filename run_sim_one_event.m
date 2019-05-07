@@ -45,7 +45,26 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     % compute residual
     improve = Jk(count)-J(zk,xk,vk);
 end
-
+opt.z = zk;
+opt.tariff.flex = zk(1);
+opt.tariff.asap = zk(2);
+opt.tariff.overstay = zk(3);
+opt.x = xk;
+opt.flex.SOCs = xk(1:prb.N_flex+1);
+opt.flex.powers = xk(prb.N_flex+2:end);
+opt.asap.powers = prb.station.pow_max;
+opt.v = vk;
+opt.prob.flex = vk(1);
+opt.prob.asap = vk(2);
+opt.prob.leave = vk(3);
+opt.J = Jk(1:count);
+opt.num_iter = count;
+opt.prb = prb;
+opt.par = par;
+opt.time.start = prb.user.time;
+opt.time.end_flex = prb.user.time + prb.user.duration;
+opt.time.end_asap = prb.user.time + prb.N_asap*par.Ts;
+opt.isOverStay = false;
 fprintf('[ OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',toc,sum(vk),count);
 
 
@@ -56,26 +75,35 @@ disp('[ VIS] visualizing...');tic;
 xticklabel_ = {'Flex, z_{c}';'ASAP, z_{uc}';'Overstay, y'};
 
 % simulation result
-figure(1)
+figure('position',[1,1,640,704]);
 subplot(411)
-plot(prb.user.time:par.Ts:prb.user.time+prb.user.duration-par.Ts, xk(prb.N_flex+2:end),'linewidth',1.5); grid on;
-xlabel('Parking durations (hour)'); ylabel('kW'); set(gca,'fontsize',15);
+plot(opt.prb.user.time:opt.par.Ts:opt.prb.user.time+opt.prb.user.duration-opt.par.Ts, opt.x(opt.prb.N_flex+2:end),'linewidth',1.5); grid on;
+xlim([prb.user.time prb.user.time+prb.user.duration])
+xlabel('opt.parking durations (hour)'); ylabel('kW'); set(gca,'fontsize',15);
 subplot(412)
-plot(prb.user.time:par.Ts:prb.user.time+prb.user.duration, xk(1:prb.N_flex+1),'linewidth',1.5); grid on;
-xlabel('Parking durations (hour)'); ylabel('SOC [0,1]'); set(gca,'fontsize',15);
+plot(opt.prb.user.time:opt.par.Ts:opt.prb.user.time+opt.prb.user.duration, opt.x(1:opt.prb.N_flex+1),'linewidth',1.5); grid on;
+xlim([prb.user.time prb.user.time+prb.user.duration])
+xlabel('opt.parking durations (hour)'); ylabel('SOC [0,1]'); set(gca,'fontsize',15);
 subplot(413)
-bar(zk(1:3)); grid on; ylabel('$/kW');
+bar(opt.z(1:3)); grid on; ylabel('$/kW');
 set(gca,'fontsize',15,'xticklabel',xticklabel_);
 subplot(414)
-bar(vk); grid on; ylabel('Probability')
+bar(opt.v); grid on; ylabel('Probability')
 set(gca,'fontsize',15,'xticklabel',xticklabel_);
+saveas(gcf,'recent-visualization/one_event.png');
+saveas(gcf,'recent-visualization/one_event.fig');
+saveas(gcf,'recent-visualization/one_event','epsc');
+
 
 % convergence analysis
-figure(2)
-plot(Jk(Jk~=0),'linewidth',1.5);grid on;hold on;
-plot(1:length(Jk(Jk~=0)),Jk(length(Jk(Jk~=0)))*ones(size(Jk(Jk~=0))),'--r','linewidth',1.5); hold off;
-xlim([1,length(Jk(Jk~=0))]);
-xlabel('Iteration'); ylabel('Cost'); title('BCD Convergence');
+figure;
+plot(opt.J(opt.J~=0),'linewidth',1.5);grid on;hold on;
+plot(1:length(opt.J(opt.J~=0)),opt.J(length(opt.J(opt.J~=0)))*ones(size(opt.J(opt.J~=0))),'--r','linewidth',1.5); hold off;
+xlim([1,length(opt.J(opt.J~=0))]);
+xlabel('Iteration'); ylabel('Cost'); title([{'BCD Convergence'},sprintf('(total iter: %d)',opt.num_iter)]);
 set(gca,'fontsize',15);
+saveas(gcf,'recent-visualization/convergence.png');
+saveas(gcf,'recent-visualization/convergence.fig');
+saveas(gcf,'recent-visualization/convergence','epsc');
 
 fprintf('[ VIS] DONE (%.2f sec)\n',toc);

@@ -23,8 +23,8 @@ J = @(z) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lam
 A = [1 -1 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
-lb = [min(prb.TOU) .* ones(3,1); 0];
-ub = 2.* max(prb.TOU) .* ones(4,1);
+lb = [max(prb.TOU) .* ones(3,1); 0];
+ub = 3.* max(prb.TOU) .* ones(4,1);
 
 % equality constraint
 Aeq = [0 0 0 1]; beq = 1;

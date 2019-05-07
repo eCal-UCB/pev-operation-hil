@@ -1,7 +1,7 @@
 % <simulations>
 % run_sim_monte.m   : run monte carlo simulations
 % run_sim_one_day.m : run simulation of one day operation
-% tutorial_single_event.m : run simulation of one control event
+% run_sim_one_event.m : run simulation of one control event
 % get_rand_os_duration.m  : randomly sample an overstay duration
 % init_sim          : initialize sim structure that stores one day
 %                     operation simulation result
