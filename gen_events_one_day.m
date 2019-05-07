@@ -4,7 +4,7 @@ function events = gen_events_one_day()
 
 act_data = readtable('real_act_data.csv');
 
-num_events = 100;
+num_events = 20;
 event_idx = sort(randi([1 height(act_data)], 1, num_events));
 
 events.inp = cell(num_events,1);

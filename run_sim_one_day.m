@@ -50,45 +50,44 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     % check visit
     if ind_event <= length(events.time)
         if ceil(events.time(ind_event)/par.Ts)*par.Ts == k
-           if events.inp{ind_event}.duration >= par.sim.endtime - k
-               break;
-           end
-           set_glob_prb(init_prb(events.inp{ind_event}));
+           if events.inp{ind_event}.duration < par.sim.endtime - k
+              set_glob_prb(init_prb(events.inp{ind_event}));
 
-           % find optimal tariff
-           opt = run_opt();
-           sim.opts{i} = opt;
+               % find optimal tariff
+               opt = run_opt();
+               sim.opts{i} = opt;
 
-           % driver makes choice
-           rc = rand;
-           if rc <= opt.prob.flex
-               opt.choice = 0; % charging with flexibility
-               opt.time.end = opt.time.end_flex;
-               opt.powers = opt.flex.powers;
-               opt.price = opt.tariff.flex;
-           elseif rc <= opt.prob.flex + opt.prob.asap
-               opt.choice = 1; % charging as soon as possible
-               opt.time.end = opt.time.end_asap;
-               opt.powers = opt.asap.powers;
-               opt.price = opt.tariff.asap;
-           else
-               opt.choice = 2; % leaving without charging
+               % driver makes choice
+               rc = rand;
+               if rc <= opt.prob.flex
+                   opt.choice = 0; % charging with flexibility
+                   opt.time.end = opt.time.end_flex;
+                   opt.powers = opt.flex.powers;
+                   opt.price = opt.tariff.flex;
+               elseif rc <= opt.prob.flex + opt.prob.asap
+                   opt.choice = 1; % charging as soon as possible
+                   opt.time.end = opt.time.end_asap;
+                   opt.powers = opt.asap.powers;
+                   opt.price = opt.tariff.asap;
+               else
+                   opt.choice = 2; % leaving without charging
+               end
+               sim.choice_probs(i,:) = opt.v;
+               sim.choice(i) = opt.choice;
+               sim.control(i,:) = opt.z(1:3);
+               fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+
+               % if the driver chooses to charge EV
+               if opt.choice <= 1
+                   [opt.time.leave, duration] = get_rand_os_duration(opt);
+                   sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
+                   station('num_occupied_pole') = station('num_occupied_pole') + 1;
+                   station(['EV' num2str(sim.tot_visit)]) = opt;
+               end
+
+               sim.tot_visit = sim.tot_visit + 1;
+               ind_event = ind_event + 1; 
            end
-           sim.choice_probs(i,:) = opt.v;
-           sim.choice(i) = opt.choice;
-           sim.control(i,:) = opt.z(1:3);
-           fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
-           
-           % if the driver chooses to charge EV
-           if opt.choice <= 1
-               [opt.time.leave, duration] = get_rand_os_duration(opt);
-               sim.overstay_duration(i) = sim.overstay_duration(i) + duration;
-               station('num_occupied_pole') = station('num_occupied_pole') + 1;
-               station(['EV' num2str(sim.tot_visit)]) = opt;
-           end
-           
-           sim.tot_visit = sim.tot_visit + 1;
-           ind_event = ind_event + 1;
         end
     end
     
