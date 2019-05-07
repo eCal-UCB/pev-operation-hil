@@ -40,6 +40,7 @@ fprintf('[%s INIT] DONE\n',datetime('now'));
 t = par.sim.starttime:par.Ts:par.sim.endtime;
 i = 0; 
 sim = init_sim(t); % simulation result
+sim.events = events;
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
 ind_event = 1;
@@ -88,7 +89,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    end
                    sim.tot_visit = sim.tot_visit + 1;
                 end
-               ind_event = ind_event + 1;
+                ind_event = ind_event + 1;
             end
         end
     end
