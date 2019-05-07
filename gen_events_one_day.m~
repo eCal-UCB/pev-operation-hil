@@ -4,8 +4,8 @@ function events = gen_events_one_day()
 
 act_data = readtable('real_act_data.csv');
 
-num_events = 100;
-event_idx = sort(randi([1 height(act_data)], 1, num_events));
+num_events = 10;
+event_idx = sort(randi([0 height(act_data)], 1, num_events));
 
 events.inp = cell(num_events,1);
 events.time = zeros(num_events,1);
@@ -15,7 +15,7 @@ events.time = zeros(num_events,1);
 
 
 for i = 1:num_events
-    n = event_idx(i); % specify event index 
+    n = event_idx(i) 
     event.time = act_data{n, 2}; 
     event.SOC_init = act_data{n, 3};
     event.SOC_need = act_data{n, 4}; % add infeasible scenario
