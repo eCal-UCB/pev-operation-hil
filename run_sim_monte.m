@@ -6,7 +6,7 @@
 % May, 2019.
 
 close all; clear;
-num_sim = 1; % simulation numbers
+num_sim = 50; % simulation numbers
 
 %% Simulation
 t0 = tic;

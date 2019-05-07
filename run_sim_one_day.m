@@ -20,6 +20,7 @@ function varargout = run_sim_one_day(varargin)
 % Contributors: Sangjae Bae, Teng Zeng, Bertrand Travacca.
 
 % clear
+
 %% Initialization
 fprintf('[%s INIT] initializing...\n',datetime('now'));
 if nargin == 0
@@ -36,26 +37,33 @@ else
 end
 
 fprintf('[%s INIT] DONE\n',datetime('now'));
+
 %% Simulation
-t = par.sim.starttime:par.Ts:par.sim.endtime;
+t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
 sim = init_sim(t); % simulation result
 sim.events = events;
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
-ind_event = 1;
+station('num_empty_pole') = par.station.num_poles;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
+    i_k = i_k + 1;
     % check visit
-    if ind_event <= length(events.time)
+    if i_event <= length(events.time)
         if any(round(events.time/par.Ts)*par.Ts == k)
-            inds_event = find(round(events.time/par.Ts)*par.Ts == k);
-            for j = 1:length(inds_event)
-                if events.inp{inds_event(j)}.duration <= par.sim.endtime - k
-                   set_glob_prb(init_prb(events.inp{inds_event(j)}));
+            inds_events_k = find(round(events.time/par.Ts)*par.Ts == k);
+            for j = 1:length(inds_events_k)
+                i_event = i_event + 1; % number of investigated events
+                if events.inp{inds_events_k(j)}.duration <= par.sim.endtime - k ...
+                        && station('num_empty_pole') > 0
+                   sim.tot_decision = sim.tot_decision + 1; % number of decisions
+                   sim.events.triggered(i_event) = true; % this event is triggered
+                    
+                   set_glob_prb(init_prb(events.inp{inds_events_k(j)}));
 
                    % find optimal tariff
                    opt = run_opt();
-                   sim.opts{ind_event} = opt;
+                   sim.opts{i_event} = opt;
 
                    % driver makes choice
                    rc = rand;
@@ -72,23 +80,27 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    else
                        opt.choice = 2; % leaving without charging
                    end
-                   sim.choice_probs(ind_event,:) = opt.v;
-                   sim.choice(ind_event) = opt.choice;
-                   sim.control(ind_event,:) = opt.z(1:3);
+                   sim.choice_probs(i_event,:) = opt.v;
+                   sim.choice(i_event) = opt.choice;
+                   sim.control(i_event,:) = opt.z(1:3);
                    fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
 
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
-                       sim.overstay_duration(ind_event) = sim.overstay_duration(ind_event) + duration;
+                       sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + duration;
+                       sim.num_service(i_k) = sim.num_service(i_k) + 1;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
-                       station(['EV' num2str(sim.tot_visit)]) = opt;
-                   end
-                   sim.tot_visit = sim.tot_visit + 1;
+                       station('num_empty_pole') = station('num_empty_pole') - 1;
+                       station(['EV' num2str(sim.tot_decision)]) = opt;
+                   end 
                 else
-                    disp('SKIPPED');
+                    if station('num_empty_pole') == 0
+                        fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
+                    else
+                        fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                    end
                 end
-                ind_event = ind_event + 1;
             end
         end
     end
@@ -99,7 +111,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
         for ev = keys
             if contains(ev{1},'EV')
                 if  k <= station(ev{1}).time.end % is charging duration
-                    TOU = interp1(0:23,par.TOU,k,'nearest');
+                    TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     if length(station(ev{1}).powers) > 1
                         power = interp1(linspace(station(ev{1}).time.start, ...
                                             station(ev{1}).time.end,...
@@ -109,20 +121,22 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                         power = station(ev{1}).powers;
                     end
                     
-                    sim.power(ind_event) = sim.power(ind_event) + power;
-                    sim.profit(ind_event) = sim.profit(ind_event) + par.Ts * power * (station(ev{1}).price - TOU);
-                    sim.charging(ind_event) = sim.charging(ind_event) + 1;
+                    sim.power(i_k) = sim.power(i_k) + power;
+                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                    sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
-                        sim.profit(ind_event) = sim.profit(ind_event) + par.Ts * station(ev{1}).tariff.overstay;
-                        sim.overstay(ind_event) = sim.overstay(ind_event) + 1;
+                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
                     else
                         station.remove(ev{1});
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;
+                        station('num_empty_pole') = station('num_empty_pole') + 1;
                     end 
                 end
             elseif contains(ev{1},'occ')
-                sim.occ(ind_event) = station('num_occupied_pole');
+                sim.occ.total(i_k) = station('num_occupied_pole');
+                sim.occ.empty(i_k) = station('num_empty_pole');
             end
         end
     end

@@ -19,7 +19,7 @@ A = diag(-ones(1,3)); b = zeros(3,1);
 
 % lower and upper bounds
 lb = zeros(3,1);
-ub = [1 1 1]';
+ub = [1 1 0.3]';
 
 % soft equality constraints
 Aeq = [-ones(1,3);ones(1,3)]; beq = [-(1-par.soft_v_eta);1+par.soft_v_eta];

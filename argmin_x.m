@@ -22,7 +22,7 @@ b = -prb.user.SOC_need;
 
 % lower bound - power min
 lb1 = zeros(N+1,1); lb1(end) = prb.user.SOC_need;
-lb2 = par.station.pow_min.*ones(N,1);
+lb2 = prb.station.pow_min.*ones(N,1);
 lb = [lb1;lb2];
 
 % upper bound - power max

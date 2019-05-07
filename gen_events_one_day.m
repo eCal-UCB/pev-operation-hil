@@ -12,6 +12,7 @@ event_idx = sort(randi([1 height(act_data)], 1, num_events));
 
 events.inp = cell(num_events,1);
 events.time = zeros(num_events,1);
+events.triggered = false*ones(num_events,1); % triggered event flag
 
 % test data -- to be removed
 % test_times = [0:0.5:num_events] + 12;
