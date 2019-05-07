@@ -4,9 +4,9 @@ par = get_glob_par();
 prb = get_glob_prb();
 
 %% Functions
-J = @(z,x,v) dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2) + par.lambda.h_c * 1/z(3); % h_c
-            sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2) + par.lambda.h_uc * 1/z(3); % h_uc
-            sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2)],v); % h_l
+J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);
+            sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))+par.lambda.z_uc*z(2)^2) + par.lambda.h_uc * 1/z(3);
+            1/3*sum(par.station.pow_max*(prb.TOU(1:prb.N_asap) - 0))],v); % h_l
 
         
 %% Run algorithm -- block coordinate descent

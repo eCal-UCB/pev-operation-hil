@@ -3,8 +3,9 @@ function [overstay_endtime, duration] = get_rand_os_duration(opt)
 % duration without penalty
 par = get_glob_par();
 prb = get_glob_prb();
-lambda = par.lambda.h_c * prb.user.overstay_duration / opt.tariff.overstay;
-range = 0:10;
+% lambda = par.lambda.h_c * prb.user.overstay_duration / opt.tariff.overstay;
+lambda = par.lambda.h_c * prb.user.overstay_duration / opt.tariff.overstay *2;
+range = 0:100;
 pdf = exp(-lambda).*(lambda).^range./factorial(range);
 cdf = cumsum(pdf);
 r = (1-min(cdf))*rand + min(cdf);
