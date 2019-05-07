@@ -1,3 +1,2 @@
-/recent-visualization/*.png
-/recent-visualization/*.eps
-/recent-visualization/*.fig
+**/recent-visualization
+**~/mygreencar/EE227C/recent-visualization
