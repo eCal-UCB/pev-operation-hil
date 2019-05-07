@@ -26,6 +26,8 @@ if nargin == 0
     par = set_glob_par(init_params());
 elseif nargin == 1
     par = varargin{1};
+elseif nargin == 2
+    par = varargin{1};
 else
     error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
 end
@@ -52,8 +54,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
        inp.batt_cap = 24;
        inp.duration = 3;
        inp.overstay_duration = 2.3;
-       inp.pow_max = ;
-       inp.pow_min = ;
+       inp.pow_max = 3.2;
+       inp.pow_min = 0;
        set_glob_prb(init_prb(inp));
        
        if inp.duration >= par.sim.endtime - k

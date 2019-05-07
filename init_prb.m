@@ -12,15 +12,15 @@ if nargin == 0
     prb.station.pow_max = par.station.pow_max;
     prb.station.pow_min = par.station.pow_min;
 elseif nargin == 1
-    inp = varargin{1};
-    prb.user.time     = inp.time;
-    prb.user.SOC_init = inp.SOC_init;
-    prb.user.SOC_need = inp.SOC_need;
-    prb.user.batt_cap = inp.batt_cap;
-    prb.user.duration = inp.duration;
-    prb.user.overstay_duration = inp.overstay_duration;
-    prb.station.pow_max = inp.pow_max;
-    prb.station.pow_min = inp.pow_min;
+    event = varargin{1};
+    prb.user.time     = event.time;
+    prb.user.SOC_init = event.SOC_init;
+    prb.user.SOC_need = event.SOC_need;
+    prb.user.batt_cap = event.batt_cap;
+    prb.user.duration = event.duration;
+    prb.user.overstay_duration = event.overstay_duration;
+    prb.station.pow_max = event.pow_max;
+    prb.station.pow_min = event.pow_min;
 end
 
 % problem specifications

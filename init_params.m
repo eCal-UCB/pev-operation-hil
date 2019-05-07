@@ -3,7 +3,7 @@ function par = init_params(varargin)
 % simulation parameters
 par.sim.starttime = 7;
 par.sim.endtime = 22;
-par.Ts = 0.25; % timestep, hour -- must decompose 1
+par.Ts = 0.1; % timestep, hour -- must decompose 1
 
 % TOU
 par.TOU = [0.2*ones(1,7) ...    % 0-7
@@ -16,7 +16,7 @@ par.TOU = [0.2*ones(1,7) ...    % 0-7
 % charging station config
 par.station.num_poles = 17;                 % number of charging poles
 % par.station.isAllOccupied = true;
-par.station.pow_min = 0;                    % default, kw
+par.station.pow_min = 0;                    % default, kw -- effective maximum power might vary by battery capacity
 par.station.pow_max = 7.2;                  % default, kw
 par.eff = 0.89;                             % power efficiency
 
