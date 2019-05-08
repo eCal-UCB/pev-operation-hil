@@ -1,8 +1,6 @@
 function events = gen_events_one_day(scenario, num_events)
-% -- scenario=0 for baseline information; num_events could be anything
-% arbitrary
-% -- scenario=1 for randomly generates a sequence of events; need to specify
-% num_events
+% scenario=0 for baseline information, 
+% scenario=1 for randomly generates a sequence of events
 par = get_glob_par(); 
 
 if scenario == 0
