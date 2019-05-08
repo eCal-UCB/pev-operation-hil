@@ -4,8 +4,20 @@ function varargout = run_sim_baseline(varargin)
 % controller. The simulation result (without controller) is used as a 
 % baseline which will be compared to the simulation result with controller.
 
-%% Config
-isFixedEventsSequence = false;    
+%% Initailize
+if nargin == 0
+    [fname, fpath] = uigetfile;
+    data = load(fullfile(fpath,fname));
+    sim_results = data.sim_results; 
+    num_sim = length(sim_results);
+elseif nargin == 1
+    sim_results = varargin{1}.sim_results;
+    num_sim = length(sim_results);
+else
+    fprintf('[%s ERROR] invalid number of inputs',datetime('now'));
+end
+par = sim_results{1}.par;
+isFixedEventSequence = par.isFixedEventSequence;
 % true -- simulation with infinite number of poles, with fixed sequence of
 %         events. This case, the baseline is a constant value.
 % false -- simulation with constrained number of poles, with random
@@ -13,27 +25,13 @@ isFixedEventsSequence = false;
 %         values (each value per sequence).
 
 
-%% Initailize
-if nargin == 0
-    [fname, fpath] = uigetfile;
-    data = load(fullfile(fpath,fname));
-    sim_results = data.sim_results; 
-    num_sim = data.num_sim;
-elseif nargin == 1
-    sim_results = varargin{1}.sim_results;
-    num_sim = varargin{1}.num_sim;
-else
-    fprintf('[%s ERROR] invalid number of inputs',datetime('now'));
-end
-
-
 %% Run simulation
 
-sim_results_baseline = cell(num_sim,1);
-
-if isFixedEventsSequence
-    sim_results_baseline = run_sim_one_day_baseline(sim_results{1});
+if isFixedEventSequence
+    sim_results_baseline = {};
+    sim_results_baseline{1} = run_sim_one_day_baseline(sim_results{1});
 else
+    sim_results_baseline = cell(num_sim,1);
     for i = 1:length(sim_results)
         % initialize
         sim_c = sim_results{i};

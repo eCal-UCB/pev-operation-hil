@@ -29,7 +29,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    opt.time.start = k;
                    opt.time.end = k + event.duration;
                    opt.time.leave = k + event.duration + event.overstay_duration;
-                   opt.tariff.overstay = 2.88;
+                   opt.tariff.overstay = 0.5;
+%                    opt.tariff.overstay = 2.88;
 
                    sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + event.overstay_duration;
                    sim.num_service(i_k) = sim.num_service(i_k) + 1;
@@ -56,12 +57,15 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     power = station(ev{1}).power;
                     sim.power(i_k) = sim.power(i_k) + power;
-                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
+                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (0.11/2);
+                    if k >= station(ev{1}).time.start + 4
+                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                    end
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
-                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
+                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                     else
                         station.remove(ev{1});
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;

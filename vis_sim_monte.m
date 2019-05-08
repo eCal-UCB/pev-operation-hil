@@ -5,20 +5,18 @@ close all;
 if nargin == 0
     [fname, fpath] = uigetfile;
     data = load(fullfile(fpath,fname));
-    sim_results = data.sim_results;
-    num_sim = data.num_sim;
-    sim_results_base = run_sim_baseline(data);
-    num_sim_base = length(sim_results_base);
+    sim_results = data.sim_results; 
+    sim_results_base = run_sim_baseline(data); 
 elseif nargin == 1
-    sim_results = varargin{1};
-    num_sim = length(sim_results);
-    sim_results_base = {};
-    num_sim_base = 0;
+    sim_results = varargin{1}; 
+    data.sim_results = sim_results;
+    sim_results_base = run_sim_baseline(data); 
 elseif nargin == 2
-    sim_results = varargin{1};
-    sim_results_base = varargin{2};
-    num_sim_base = length(sim_results_base);
+    sim_results = varargin{1}; 
+    sim_results_base = varargin{2}; 
 end
+num_sim = length(sim_results); 
+num_sim_base = length(sim_results_base);
 
 % consider three cases:
 % - show distribution of controlled case only
@@ -75,20 +73,25 @@ fprintf('[%s SIM] visualizing...\n',datetime('now')); tic;
 % overstay histogram
 figure; num_bins = 10; 
 vals_to_vis = {'overstay_mean','profit','service_tot'};
-baselines = {mean(overstay_mean)*1.2, mean(profit)*0.8, mean(service_tot)*0.8};
+baselines = {'overstay_mean_base', 'profit_base', 'service_tot_base'};
 xlabels = {'mean overstay duration (hour)','net profit ($)','service provide (#)'};
 ylabels = {'probability [0,1]'};
 num_subplot = length(vals_to_vis);
 for i = 1:num_subplot
     subplot(eval([num2str(num_subplot) '1' num2str(i)]));
-    eval(['vals=' vals_to_vis{i}]); 
-    baseline = baselines{i};
-    h = histogram(vals,num_bins,'Normalization','probability'); hold on;
+    eval(['vals=' vals_to_vis{i} ';']); 
+    eval(['baseline=' baselines{i} ';']);
+    h1 = histogram(vals,num_bins,'Normalization','probability'); hold on;
+    ylim([0 max(h1.BinCounts/sum(h1.BinCounts))+0.05]);
+    if num_sim_base > 1
+        h2 = histogram(baseline,num_bins,'Normalization','probability');
+        ylim([0 max(max(h1.BinCounts/sum(h1.BinCounts)),...
+            max(h2.BinCounts/sum(h2.BinCounts)))+0.05]);
+    end
     s1 = stem(mean(vals),1,'b','linewidth',3, 'markersize',eps); 
     s2 = stem(mean(baseline),1,'r','linewidth',3,'markersize',eps); hold off;
-    ylim([0 max(h.BinCounts/sum(h.BinCounts))+0.05]);
-    text(mean(vals),max(h.BinCounts/sum(h.BinCounts))+0.04, ...
-        sprintf(' mean: %.1f (%+.2f%%)',mean(vals),(mean(vals)/baseline-1)*100),...
+    text(mean(vals),max(h1.BinCounts/sum(h1.BinCounts))+0.04, ...
+        sprintf(' mean: %.1f (%+.2f%%)',mean(vals),(mean(vals)/mean(baseline)-1)*100),...
         'fontsize',15);
     grid on; xlabel(xlabels{i}); ylabel('probability [0,1]');
     set(gca,'fontsize',15);

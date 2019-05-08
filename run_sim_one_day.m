@@ -25,10 +25,10 @@ function varargout = run_sim_one_day(varargin)
 fprintf('[%s INIT] initializing...\n',datetime('now'));
 if nargin == 0
     par = set_glob_par(init_params());
-    events = gen_events_one_day();
+    events = gen_events_one_day(par);
 elseif nargin == 1
     par = varargin{1};
-    events = gen_events_one_day();
+    events = gen_events_one_day(par);
 elseif nargin == 2
     par = varargin{1};
     events = varargin{2};
@@ -44,6 +44,7 @@ sim = init_sim(t); % simulation result
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
 station('num_empty_pole') = par.station.num_poles;
+sim.events = events;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
     i_k = i_k + 1;
@@ -141,7 +142,6 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     end
 end
 
-sim.events = events;
 sim.par = par;
 
 varargout = {};

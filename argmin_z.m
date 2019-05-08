@@ -24,7 +24,7 @@ A = [1 -1 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
 lb = [max(prb.TOU) * ones(3,1); 0];
-ub = [3 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU) * ones(2,1);1];
+ub = [3 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU); 1];
 
 % equality constraint
 Aeq = [0 0 0 1]; beq = 1;

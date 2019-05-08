@@ -5,6 +5,10 @@ par.sim.starttime = 7;
 par.sim.endtime = 22;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
+% Event parameters
+par.isFixedEventSequence = true;
+par.num_events = 20;
+
 % TOU
 par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.244*ones(1,48-34) ...    % 8.5-12
@@ -13,7 +17,7 @@ par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.217*ones(1,96-86)];      % 22-24
 
 % charging station config
-par.station.num_poles = 8;                 % number of charging poles
+par.station.num_poles = 5;                 % number of charging poles
 par.eff = 0.89;                             % power efficiency
 
 % dcm params
