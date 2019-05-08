@@ -56,7 +56,6 @@ opt.par = par;
 opt.time.start = prb.user.time;
 opt.time.end_flex = prb.user.time + prb.user.duration;
 opt.time.end_asap = prb.user.time + prb.N_asap*par.Ts;
-opt.isOverStay = false;
 
 fprintf('[%s OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',datetime('now'),toc,sum(vk),count);
 end

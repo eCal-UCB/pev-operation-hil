@@ -41,7 +41,6 @@ fprintf('[%s INIT] DONE\n',datetime('now'));
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
 sim = init_sim(t); % simulation result
-sim.events = events;
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
 station('num_empty_pole') = par.station.num_poles;
@@ -141,6 +140,9 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
         end
     end
 end
+
+sim.events = events;
+sim.par = par;
 
 varargout = {};
 varargout{1} = sim;
