@@ -13,12 +13,12 @@ else
 end
 
 % initialize
-if par.isFixedEventSequence % with one fixed sequence of events
+if par.sim.isFixedEventSequence % with one fixed sequence of events
     act_data = readtable('real_act_data_1day.csv');
     num_events = height(act_data);
     event_idx = 1:num_events;
 else % with multi random sequences of events
-    num_events = par.num_events; % by default. 
+    num_events = par.sim.num_events; % by default. 
     act_data = readtable('real_act_data.csv');
     event_idx = sort(randi([1 height(act_data)], 1, num_events));
 end

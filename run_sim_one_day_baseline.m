@@ -1,5 +1,6 @@
 function sim = run_sim_one_day_baseline(sim_c)
 % input: a one-day simulation result with controller
+fprintf('[%s SIM] start running simulation with baseline (without controller)\n',datetime('now'));
 events = sim_c.events; par = sim_c.par;
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
 sim = init_sim(t); % simulation result
@@ -29,8 +30,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    opt.time.start = k;
                    opt.time.end = k + event.duration;
                    opt.time.leave = k + event.duration + event.overstay_duration;
-                   opt.tariff.overstay = 0.5;
-%                    opt.tariff.overstay = 2.88;
+                   opt.tariff.overstay = par.base.tariff.overstay;
 
                    sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + event.overstay_duration;
                    sim.num_service(i_k) = sim.num_service(i_k) + 1;
@@ -58,10 +58,10 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     power = station(ev{1}).power;
                     sim.power(i_k) = sim.power(i_k) + power;
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
-                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (0.11/2);
-                    if k >= station(ev{1}).time.start + 4
-                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
-                    end
+                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (TOU); % the charging fee is twice as high as TOU
+%                     if k >= station(ev{1}).time.start + 4
+%                         sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+%                     end
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;

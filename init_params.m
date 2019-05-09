@@ -1,13 +1,20 @@
 function par = init_params(varargin)
 
-% simulation parameters
+% sensitivity analysis
+par.sens_analysis.num_poles = 2:15;
+
+% monte carlo
+par.monte.num_sims = 30;
+
+% each one day simulation
 par.sim.starttime = 7;
 par.sim.endtime = 22;
+par.sim.isFixedEventSequence = false;
+par.sim.num_events = 15;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
-% Event parameters
-par.isFixedEventSequence = true;
-par.num_events = 20;
+% baseline parameters
+par.base.tariff.overstay = 1;
 
 % TOU
 par.TOU = [0.217*ones(1,34) ...    % 0-8.5
@@ -38,12 +45,6 @@ par.lambda.z_uc = 0.1;
 par.lambda.h_c = 0.01; % TODO: should be average overstay penalty in real data, should move to par
 par.lambda.h_uc = 0.01; % TODO: should be average overstay penalty in real data, should move to par
 par.mu = 1e4;
-par.soft_v_eta = 1e-2; % softening equality constraint for v; to avoid numerical error
+par.soft_v_eta = 1e-3; % softening equality constraint for v; to avoid numerical error
 par.opt.eps = 1e-4;
-
-
-% cost function
-par.v_dot_h = ['dot([sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1))).^2)+ par.lambda.h_c * 1/z(3);'...
-                   ' sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))).^2)+ par.lambda.h_uc * 1/z(3);'...
-                   ' 1/3*sum((par.station.pow_max*(prb.TOU(1:prb.N_asap) - 0)).^2)],v)'];
 end

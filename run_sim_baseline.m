@@ -17,7 +17,7 @@ else
     fprintf('[%s ERROR] invalid number of inputs',datetime('now'));
 end
 par = sim_results{1}.par;
-isFixedEventSequence = par.isFixedEventSequence;
+isFixedEventSequence = par.sim.isFixedEventSequence;
 % true -- simulation with infinite number of poles, with fixed sequence of
 %         events. This case, the baseline is a constant value.
 % false -- simulation with constrained number of poles, with random

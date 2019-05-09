@@ -18,15 +18,6 @@ end
 num_sim = length(sim_results); 
 num_sim_base = length(sim_results_base);
 
-% consider three cases:
-% - show distribution of controlled case only
-%   >> if num_sim_base == 0
-% - show distribution of both controlled and uncontrolled cases (baseline),
-%   with fixed sequence of events; baseline has one value
-%   >> if num_sim_base == 1
-% - show distribution of both controlled and uncontrolled cases (baseline),
-%   with random sequence of events; baseline has distribution
-%   >> if num_sim_base > 1
 
 %% Postprocessing
 fprintf('[%s SIM] post-processing...\n',datetime('now')); tic;
@@ -65,13 +56,12 @@ fprintf('[%s SIM] post-processing... DONE (%.2f sec)\n',datetime('now'),toc);
 
 
 %% Visualization
-% RESUME: baseline for different cases
 
 % TODO: pareto chart overstay duration vs. profits with different reg params for overstaying
 fprintf('[%s SIM] visualizing...\n',datetime('now')); tic;
 % (1) distributions
 % overstay histogram
-figure; num_bins = 10; 
+figure('position',[1,1,640,704]); num_bins = 10; 
 vals_to_vis = {'overstay_mean','profit','service_tot'};
 baselines = {'overstay_mean_base', 'profit_base', 'service_tot_base'};
 xlabels = {'mean overstay duration (hour)','net profit ($)','service provide (#)'};
