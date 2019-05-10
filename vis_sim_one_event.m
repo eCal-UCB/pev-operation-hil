@@ -22,10 +22,14 @@ saveas(gcf,'recent-visualization/one_event','epsc');
 
 % convergence analysis
 figure;
-plot(opt.J(opt.J~=0),'linewidth',1.5);grid on;hold on;
-plot(1:length(opt.J(opt.J~=0)),opt.J(length(opt.J(opt.J~=0)))*ones(size(opt.J(opt.J~=0))),'--r','linewidth',1.5); hold off;
+% plot(opt.J(opt.J~=0),'linewidth',1.5);grid on;hold on;
+% plot(1:length(opt.J(opt.J~=0)),opt.J(length(opt.J(opt.J~=0)))*ones(size(opt.J(opt.J~=0))),'--r','linewidth',1.5); hold off;
+plot(log(opt.J(opt.J~=0)/min(opt.J(opt.J~=0))),'linewidth',1.5);grid on;hold on;
+plot(1:length(opt.J(opt.J~=0)),zeros(size(opt.J(opt.J~=0))),'--r','linewidth',1.5); hold off;
 xlim([1,length(opt.J(opt.J~=0))]);
-xlabel('Iteration'); ylabel('Cost'); title([{'BCD Convergence'},sprintf('(total iter: %d)',opt.num_iter)]);
+xlabel('iteration'); 
+ylabel({'$log(\frac{cost}{cost^\ast})$'},'interpreter','latex'); 
+title([{'BCD Convergence'},sprintf('(total iter: %d)',opt.num_iter)]);
 set(gca,'fontsize',15);
 saveas(gcf,'recent-visualization/convergence.png');
 saveas(gcf,'recent-visualization/convergence.fig');
