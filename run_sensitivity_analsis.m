@@ -23,4 +23,4 @@ save(fname);
 
 % visualize
 vis_sensitivity_analysis(monte_results);
-fprintf('\n[%s SENSITIVITY] DONE sensitivity analysis, %.2f sec \n\n',datetime('now'),toc(t0));
+fprintf('\n[%s SENSITIVITY] DONE sensitivity analysis, %.2f sec \n\n',datetime('now'),toc(t0)); 

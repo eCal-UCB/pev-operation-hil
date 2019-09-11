@@ -14,7 +14,7 @@ par.sim.num_events = 50;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
 % baseline parameters
-par.base.tariff.overstay = 1;
+par.base.tariff.overstay = 0.1;
 
 % TOU
 par.TOU = [0.217*ones(1,34) ...    % 0-8.5
@@ -43,7 +43,7 @@ par.lambda.x = 10;
 par.lambda.z_c = 10;
 par.lambda.z_uc = 0.1;
 par.lambda.h_c = 0.01; % TODO: should be average overstay penalty in real data, should move to par
-par.lambda.h_uc = 0.01; % TODO: should be average overstay penalty in real data, should move to par
+par.lambda.h_uc = 1; % TODO: should be average overstay penalty in real data, should move to par
 par.mu = 1e4;
 par.soft_v_eta = 1e-3; % softening equality constraint for v; to avoid numerical error
 par.opt.eps = 1e-4;
