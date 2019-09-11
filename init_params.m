@@ -1,16 +1,16 @@
 function par = init_params(varargin)
 
 % sensitivity analysis
-par.sens_analysis.num_poles = 16:25;
+par.sens_analysis.num_poles = 2:15;
 
 % monte carlo
-par.monte.num_sims = 100;
+par.monte.num_sims = 50;
 
 % each one day simulation
 par.sim.starttime = 7;
 par.sim.endtime = 22;
 par.sim.isFixedEventSequence = false;
-par.sim.num_events = 30;
+par.sim.num_events = 50;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
 % baseline parameters

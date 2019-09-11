@@ -29,7 +29,8 @@ events.time = zeros(num_events,1);
 events.triggered = false*ones(num_events,1); % triggered event flag
 for i = 1:num_events
     n = event_idx(i); % specify event index 
-    if act_data{n, 6} < 0.3
+    if act_data{n, 6} < 0.3 % if the charging duration is less than 0.3 
+                            % hours, we ignore the event
         continue
     end
     event.time = act_data{n, 2}; 

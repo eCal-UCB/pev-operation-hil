@@ -133,16 +133,6 @@ saveas(gcf,'recent-visualization/sensitivity_num_pole.png');
 saveas(gcf,'recent-visualization/sensitivity_num_pole.fig');
 saveas(gcf,'recent-visualization/sensitivity_num_pole','epsc');
 
-% visualize the quality of service
-figure;
-plot(num_poles, plot_service_tot,'linewidth',2); hold on;
-plot(num_poles, plot_service_tot_base,'linewidth',2); hold off;grid on;
-xlabel('Number of poles');
-ylabel('Number of services');
-set(gca, 'fontsize' , 15);
-legend('Controlled','Uncontrolled'); 
-
-
 %% visalize the quality of service in box plot
 figure;
 plot(num_poles,plot_service_tot,'linewidth',2); hold on;

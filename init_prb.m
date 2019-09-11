@@ -3,7 +3,7 @@ par = get_glob_par();
 
 if nargin == 0
     % user input
-    prb.user.time     = 14.25;
+    prb.user.time     = 14.25; 
     prb.user.SOC_init = 0.3;
     prb.user.SOC_need = 0.5;
     prb.user.batt_cap = 80; % kwh
@@ -36,7 +36,7 @@ prb.THETA = [prb.dcm.charging_flex.params';
 
 % problem specifications
 prb.N_flex = prb.user.duration/par.Ts;             % charging duration that is not charged, hour
-prb.N_asap = ceil((prb.user.SOC_need-prb.user.SOC_init)...
+prb.N_asap = floor((prb.user.SOC_need-prb.user.SOC_init)...
              *prb.user.batt_cap/prb.station.pow_max/par.eff/par.Ts);
 prb.TOU = interp1(0:0.25:24-0.25,par.TOU,...
         prb.user.time:par.Ts:prb.user.time+prb.user.duration-par.Ts,... 

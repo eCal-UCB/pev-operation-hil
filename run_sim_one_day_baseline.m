@@ -32,7 +32,6 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    opt.time.leave = k + event.duration + event.overstay_duration;
                    opt.tariff.overstay = par.base.tariff.overstay;
 
-                   sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + event.overstay_duration;
                    sim.num_service(i_k) = sim.num_service(i_k) + 1;
                    station('num_occupied_pole') = station('num_occupied_pole') + 1;
                    station('num_empty_pole') = station('num_empty_pole') - 1;
@@ -66,6 +65,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     if k <= station(ev{1}).time.leave 
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
                         sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;

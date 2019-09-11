@@ -4,8 +4,10 @@ par = get_glob_par();
 prb = get_glob_prb();
 
 %% Functions
+% fprintf('TEST: N_asap: %d\n',prb.N_asap);
+% fprintf('TEST: length(TOU): %d\n',length(prb.TOU));
 J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);
-            sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))+par.lambda.z_uc*z(2)^2) + par.lambda.h_uc * 1/z(3);
+            sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))) + par.lambda.z_uc*z(2)^2) + par.lambda.h_uc * 1/z(3);
             sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0))],v); % h_l
 
         
