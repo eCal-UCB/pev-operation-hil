@@ -122,11 +122,11 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     end
                     
                     sim.power(i_k) = sim.power(i_k) + power;
-                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                    sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
-                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else

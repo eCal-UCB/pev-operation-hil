@@ -1,7 +1,7 @@
 function par = init_params(varargin)
 
 % sensitivity analysis
-par.sens_analysis.num_poles = 2:15;
+par.sens_analysis.num_poles = 2:2:15;
 
 % monte carlo
 par.monte.num_sims = 50;
@@ -43,7 +43,7 @@ par.lambda.x = 10;
 par.lambda.z_c = 10;
 par.lambda.z_uc = 0.1;
 par.lambda.h_c = 0.01; % TODO: should be average overstay penalty in real data, should move to par
-par.lambda.h_uc = 1; % TODO: should be average overstay penalty in real data, should move to par
+par.lambda.h_uc = 0.1; % TODO: should be average overstay penalty in real data, should move to par
 par.mu = 1e4;
 par.soft_v_eta = 1e-3; % softening equality constraint for v; to avoid numerical error
 par.opt.eps = 1e-4;

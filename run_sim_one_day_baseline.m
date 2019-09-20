@@ -57,14 +57,14 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     power = station(ev{1}).power;
                     sim.power(i_k) = sim.power(i_k) + power;
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
-                    sim.profit(i_k) = sim.profit(i_k) + par.Ts * power * (TOU); % the charging fee is twice as high as TOU
+                    sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (TOU); % the charging fee is twice as high as TOU
 %                     if k >= station(ev{1}).time.start + 4
 %                         sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
 %                     end
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
-                        sim.profit(i_k) = sim.profit(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
