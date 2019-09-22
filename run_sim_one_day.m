@@ -15,7 +15,7 @@ function varargout = run_sim_one_day(varargin)
 % [X].
 %
 % THIS WORK IS A PART OF EE227C COURSE PROJECT AT UC BERKELEY.
-% last modified, May 2019.
+% last modified, Sept 2019 - Teng
 %
 % Contributors: Sangjae Bae, Teng Zeng, Bertrand Travacca.
 
@@ -120,9 +120,13 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     elseif length(station(ev{1}).powers) == 1
                         power = station(ev{1}).powers;
                     end
-                    
+                    if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the  uncontrol charging
+                        sim.profit_charging_uc(i_k) = sim.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                    else % flexible charging
+                        sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                    end
                     sim.power(i_k) = sim.power(i_k) + power;
-                    sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+%                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 

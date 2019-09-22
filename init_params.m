@@ -1,10 +1,10 @@
 function par = init_params(varargin)
 
 % sensitivity analysis
-par.sens_analysis.num_poles = 2:2:15;
+par.sens_analysis.num_poles = 2:4:15;
 
 % monte carlo
-par.monte.num_sims = 50;
+par.monte.num_sims = 10;
 
 % each one day simulation
 par.sim.starttime = 7;

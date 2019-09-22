@@ -127,7 +127,7 @@ elseif style == 2
     h1 = subplot(211);
 %     b1=bar(num_poles,[mean_profit_charging_uc_gap, mean_profit_charging_c_gap, mean_profit_overstay_gap]);
     b1 = bar(num_poles, [profit_charging_uc_sum/num_monte, profit_charging_c_sum/num_monte, profit_overstay_sum/num_monte, ...
-        profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base/num_monte]);
+        profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base]);
 %     b2=bar(num_poles+0.5,mean_profit_overstay_gap,'FaceColor',[0.2,0.3,0.3]);
     title({'Sensitivity Analysis','with Number of Poles at Charging Station'});
     legend('profit-charging-uc','profit-charging-c','profit-overstay', 'profit-charging-uc-base','profit-overstay-base')
