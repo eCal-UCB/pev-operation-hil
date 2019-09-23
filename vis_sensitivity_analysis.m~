@@ -17,6 +17,7 @@ num_poles = par.sens_analysis.num_poles;
 mean_profit_charging_uc_gap = zeros(num_monte,1);
 mean_profit_charging_c_gap = zeros(num_monte,1);
 mean_profit_overstay_gap = zeros(num_monte,1);
+mean_profit_gap = zeros(num_monte,1);
 % -- temporary for value comparison
 profit_charging_uc_sum = zeros(num_monte,1);
 profit_charging_c_sum = zeros(num_monte,1);
@@ -46,17 +47,23 @@ for i = 1:num_monte
     overstay_tot = zeros(num_sims,1);
     overstay_mean = zeros(num_sims,1);
     overstay_penalty_mean = zeros(num_sims,1);
+    profit_tot = zeros(num_sims,1);
     profit_charging_uc = zeros(num_sims,1);
     profit_charging_c = zeros(num_sims,1);
     profit_overstay = zeros(num_sims,1);
     service_tot = zeros(num_sims,1);
     for n = 1:num_sims
-        overstay_mean(n) = mean(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0));
+        if ~isempty(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0))
+            overstay_mean(n) = mean(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0));
+        else
+            overstay_mean(n) = 0;
+        end
         overstay_penalty_mean(n) = mean(sim_results{n}.control(sim_results{n}.control(:,3)~=0,3));
         overstay_tot(n) = sum(sim_results{n}.overstay_duration);
         profit_charging_uc(n) = sum(sim_results{n}.profit_charging_uc);
         profit_charging_c(n) = sum(sim_results{n}.profit_charging_c);
         profit_overstay(n) = sum(sim_results{n}.profit_overstay);
+        profit_tot(n) = profit_charging_uc(n) + profit_charging_c(n) + profit_overstay(n);
         service_tot(n) = sum(sim_results{n}.num_service);
     end
 
@@ -64,6 +71,7 @@ for i = 1:num_monte
     overstay_tot_base = zeros(num_sims,1);
     overstay_mean_base = zeros(num_sims,1);
     overstay_penalty_mean_base = zeros(num_sims,1);
+    profit_tot_base = zeros(num_sims,1);
     profit_charging_uc_base = zeros(num_sims,1);
     profit_charging_c_base = zeros(num_sims,1);
     profit_overstay_base = zeros(num_sims,1);
@@ -75,11 +83,13 @@ for i = 1:num_monte
         profit_charging_uc_base(n) = sum(sim_results_base{n}.profit_charging_uc);
         profit_charging_c_base(n) = sum(sim_results_base{n}.profit_charging_c);
         profit_overstay_base(n) = sum(sim_results_base{n}.profit_overstay);
+        profit_tot_base(n) = profit_charging_uc_base(n) + profit_charging_c_base(n) + profit_overstay_base(n);
         service_tot_base(n) = sum(sim_results_base{n}.num_service);
     end
     
     % compute the improvements
     box_overstay_gap(:,i) = (overstay_mean./overstay_mean_base-1)*100;
+    mean_profit_gap(i) = (mean(profit_tot)/mean(profit_tot_base)-1)*100;
     mean_profit_charging_uc_gap(i) = (mean(profit_charging_uc)/mean(profit_charging_uc_base)-1)*100;
     mean_profit_charging_c_gap(i) = (mean(profit_charging_c)/mean(profit_charging_c_base)-1)*100;
     mean_profit_overstay_gap(i) = (mean(profit_overstay)/mean(profit_overstay_base)-1)*100;
@@ -124,19 +134,16 @@ if style == 1 % 09.21.2019 Teng: not change since not using. 09.20.2019, changed
 % style2: bar plot in each figure
 elseif style == 2
     figure;
-    h1 = subplot(211);
-%     b1=bar(num_poles,[mean_profit_charging_uc_gap, mean_profit_charging_c_gap, mean_profit_overstay_gap]);
-    b1 = bar(num_poles, [profit_charging_uc_sum/num_monte, profit_charging_c_sum/num_monte, profit_overstay_sum/num_monte, ...
-        profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base]);
-%     b2=bar(num_poles+0.5,mean_profit_overstay_gap,'FaceColor',[0.2,0.3,0.3]);
+    h1 = subplot(311);
+    b1=bar(num_poles,mean_profit_gap);
     title({'Sensitivity Analysis','with Number of Poles at Charging Station'});
-    legend('profit-charging-uc','profit-charging-c','profit-overstay', 'profit-charging-uc-base','profit-overstay-base')
-    set(gca,'fontsize',15); grid on; 
+%     b1=bar(num_poles,[mean_profit_charging_uc_gap, mean_profit_charging_c_gap, mean_profit_overstay_gap]);
+    set(gca,'fontsize',15);
 
     p1=get(h1,'position');
-    h2=subplot(212,'position',[p1(1), p1(2)-p1(4)-0.1, p1(3), p1(4)]);
-    b3=bar(num_poles,-(mean_overstay_gap),'facecolor',[0.4660 0.6740 0.1880]); 
-   
+    h3=subplot(313,'position',[p1(1), p1(2)-p1(4)-0.1, p1(3), p1(4)]);
+    subplot(313);
+    b2=bar(num_poles,-(mean_overstay_gap),'facecolor',[0.4660 0.6740 0.1880]); 
     xlabel('Number of poles'); 
     legend('Overstay');
     grid on; set(gca,'fontsize',15);
@@ -163,7 +170,7 @@ saveas(gcf,'recent-visualization/sensitivity_num_pole.png');
 saveas(gcf,'recent-visualization/sensitivity_num_pole.fig');
 saveas(gcf,'recent-visualization/sensitivity_num_pole','epsc');
 
-%% visalize the quality of service in box plot
+%% visalize the quality of service
 figure;
 plot(num_poles,plot_service_tot,'linewidth',2); hold on;
 plot(num_poles,plot_service_tot_base,'linewidth',2);

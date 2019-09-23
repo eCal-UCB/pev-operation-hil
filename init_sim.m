@@ -2,6 +2,7 @@ function sim = init_sim(t)
 par = get_glob_par();
 
 sim.power = zeros(size(t));
+sim.profit = zeros(size(t));
 sim.profit_charging_uc = zeros(size(t)); % record revenue from providing charging service uncontrolled charging
 sim.profit_charging_c = zeros(size(t)); % record revenue from providing charging service flexible charging
 sim.profit_overstay = zeros(size(t)); % record penalty from overstay
