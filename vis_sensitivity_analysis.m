@@ -139,6 +139,7 @@ elseif style == 2
     title({'Sensitivity Analysis','with Number of Poles at Charging Station'});
     set(gca,'fontsize',15); grid on;
     p1=get(h1,'position');
+    legend('Profit')
 
     h2 = subplot(212,'position',[p1(1), p1(2)-p1(4)-0.1, p1(3), p1(4)]);
     b2 = bar(num_poles,-(mean_overstay_gap),'facecolor',[0.4660 0.6740 0.1880]); 
@@ -184,19 +185,23 @@ legend('W/ incentive','W/o incentive','location','nw');
 
 %% visualize profit by charging option/overstay
 figure;
-subplot(211);
+subplot(121);
 bar(num_poles, [profit_charging_uc_sum/num_monte, profit_charging_c_sum/num_monte, profit_overstay_sum/num_monte]);
 % xlabel('Number of poles');
 ylabel('Profit [$]');
-title('Average Profit Distributions with Incentive Control');
+title('Average Profit Distributions [with Incentive Control]');
+xlabel('Number of poles');
 legend('Charging-Flex','Charging-ASAP','Overstay');
+ylim([0, 160]);
 set(gca,'fontsize',15); grid on; 
 
-subplot(212);
+subplot(122);
 bar(num_poles, [profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base/num_monte]);
 xlabel('Number of poles');
-ylabel('Profit [$]');
-title('Average Profit Distributions without Incentive Control');
+% ylabel('Profit [$]');
+title('Average Profit Distributions [without Incentive Control]');
+xlabel('Number of poles');
 legend('Charging','Overstay')
+ylim([0, 160]);
 set(gca,'fontsize',15); grid on; 
 end

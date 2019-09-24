@@ -88,7 +88,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
-%                        sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + duration;
+                       sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + duration;
                        sim.num_service(i_k) = sim.num_service(i_k) + 1;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
                        station('num_empty_pole') = station('num_empty_pole') - 1;
@@ -132,7 +132,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     if k <= station(ev{1}).time.leave 
                         sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
-                        sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
+%                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;
