@@ -192,7 +192,7 @@ ylabel('Profit [$]');
 title('Average Profit Distributions [with Incentive Control]');
 xlabel('Number of poles');
 legend('Charging-Flex','Charging-ASAP','Overstay');
-ylim([0, 160]);
+% ylim([0, 200]);
 set(gca,'fontsize',15); grid on; 
 
 subplot(122);
@@ -202,6 +202,6 @@ xlabel('Number of poles');
 title('Average Profit Distributions [without Incentive Control]');
 xlabel('Number of poles');
 legend('Charging','Overstay')
-ylim([0, 160]);
+% ylim([0, 200]);
 set(gca,'fontsize',15); grid on; 
 end
