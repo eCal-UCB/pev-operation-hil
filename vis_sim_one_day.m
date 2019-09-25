@@ -32,15 +32,20 @@ if options.display
         
         % profit
         subplot(eval([num2str(num_subplot) '1' num2str(count)])); count = count + 1;
-        plot(sim.t,sim.profit_charging_uc,'linewidth',1.5); hold on;
-        plot(sim.t,sim.profit_charging_c,'linewidth',1.5); hold on;
-        plot(sim.t,sim.profit_overstay,'linewidth',1.5); hold on;
-        plot(sim.t,cumsum(sim.profit_charging_uc),'linewidth',1.5); hold on;
-        plot(sim.t,cumsum(sim.profit_charging_c),'linewidth',1.5); hold on;
-        plot(sim.t,cumsum(sim.profit_overstay),'linewidth',1.5); hold off; xlim([sim.t(1) sim.t(end)]);
+%         plot(sim.t,sim.profit_charging_uc,'linewidth',1.5); hold on;
+%         plot(sim.t,sim.profit_charging_c,'linewidth',1.5); hold on;
+%         plot(sim.t,sim.profit_overstay,'linewidth',1.5); hold on;
+%         plot(sim.t,cumsum(sim.profit_charging_uc),'linewidth',1.5); hold on;
+%         plot(sim.t,cumsum(sim.profit_charging_c),'linewidth',1.5); hold on;
+%         plot(sim.t,cumsum(sim.profit_overstay),'linewidth',1.5); hold off; xlim([sim.t(1) sim.t(end)]);
+%         grid on; xlabel('hour of the day'); ylabel('profit ($)');
+%         legend('instant-charging-uc', 'instant-charging-c', 'instant-overstay', ...
+%             'net-charging-uc', 'net-charging-c', 'net-overstay')
+        plot(sim.t,sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay,'linewidth',1.5); hold on;
+        plot(sim.t,cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay),'linewidth',1.5); 
+        hold off; xlim([sim.t(1) sim.t(end)]);
         grid on; xlabel('hour of the day'); ylabel('profit ($)');
-        legend('instant-charging-uc', 'instant-charging-c', 'instant-overstay', ...
-            'net-charging-uc', 'net-charging-c', 'net-overstay')
+        legend('Instant','Net');
         set(gca,'fontsize',15);
 
         % occupancy

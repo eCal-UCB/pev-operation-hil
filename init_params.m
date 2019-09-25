@@ -25,7 +25,7 @@ par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.217*ones(1,96-86)];      % 22-24
 
 % charging station config
-par.station.num_poles = 7;                 % number of charging poles
+par.station.num_poles = 6;                 % number of charging poles
 par.eff = 0.89;                             % power efficiency
 
 % dcm params
