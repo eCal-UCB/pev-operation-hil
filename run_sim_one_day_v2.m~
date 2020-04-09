@@ -47,9 +47,6 @@ station('num_occupied_pole') = 0;
 station('FLEX_list') = [];
 station('ASAP_list') = [];
 station('num_empty_pole') = par.station.num_poles;
-station('D_init') = 0;
-station('pow_cap') = 200; % this value is arbitrary for now
-station('cost_dc') = 5; % this value is arbitrary for now
 sim.events = events;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
@@ -74,8 +71,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        opt = run_opt_station(station, k);
                    end
                    sim.opts{i_event} = opt;
-                   station('D_init') = opt.peak_pow; % update demand charge
-                   
+
                    % driver makes choice
                    rc = rand;
                    if rc <= opt.prob.flex
@@ -147,9 +143,6 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                         sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     end
                     sim.power(i_k) = sim.power(i_k) + power;
-                    % ===== TODO: add power_record to user
-                    % station([?EV1?]).power_traj = opt.power(t);
-                    
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying

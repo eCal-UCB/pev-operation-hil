@@ -42,7 +42,7 @@ opt.tariff.asap = zk(2);
 opt.tariff.overstay = zk(3);
 opt.x = xk;
 % update demand charge
-opt.peak_pow = max(xk(prb.N_flex+2:end));
+
 opt.flex.SOCs = xk(1:prb.N_flex+1);
 opt.flex.powers = xk(prb.N_flex+2:end);
 opt.asap.powers = prb.station.pow_max;
