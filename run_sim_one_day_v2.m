@@ -1,4 +1,5 @@
-    function varargout = run_sim_one_day_v2(varargin)
+function varargout = run_sim_one_day_v2(varargin)
+clear;clc;close all;
 % This script is to simulate EV charging station operations where the
 % charging tariff is determined real-time with taking account into EV
 % drivers' behaviors. The overall objective of the tariff control is to
@@ -48,7 +49,7 @@ station('FLEX_list') = [];
 station('ASAP_list') = [];
 station('num_empty_pole') = par.station.num_poles;
 station('D_init') = 0;
-station('pow_cap') = 200; % this value is arbitrary for now
+station('pow_cap') = 50 ; % this value is arbitrary for now
 station('cost_dc') = 5; % this value is arbitrary for now
 sim.events = events;
 
@@ -71,7 +72,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    if isempty(station('FLEX_list'))
                        opt = run_opt();
                    else
-                       opt = run_opt_station(station, k);
+                       [station, opt] = run_opt_station(station, k);
                    end
                    sim.opts{i_event} = opt;
                    station('D_init') = opt.peak_pow; % update demand charge
@@ -113,6 +114,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        sim.num_service(i_k) = sim.num_service(i_k) + 1;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
                        station('num_empty_pole') = station('num_empty_pole') - 1;
+                       opt.power_traj_actual = [];
                        station(['EV' num2str(sim.tot_decision)]) = opt;
                    end 
                 else
@@ -133,22 +135,25 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
             if contains(ev{1},'EV')
                 if  k <= station(ev{1}).time.end % is charging duration
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
-                    if length(station(ev{1}).powers) > 1
-                        power = interp1(linspace(station(ev{1}).time.start, ...
-                                            station(ev{1}).time.end,...
-                                            length(station(ev{1}).powers)), ...
-                                            station(ev{1}).powers, k);
-                    elseif length(station(ev{1}).powers) == 1
-                        power = station(ev{1}).powers;
-                    end
+                    % add actual power_ record to user
+                    opt = station(ev{1});
+                    power = station(ev{1}).powers(1);
+                    opt.power_traj_actual = [opt.power_traj_actual power];
+                    station(ev{1}) = opt;
+%                     if length(station(ev{1}).powers) > 1
+%                         power = interp1(linspace(station(ev{1}).time.start, ...
+%                                             station(ev{1}).time.end,...
+%                                             length(station(ev{1}).powers)), ...
+%                                             station(ev{1}).powers, k);
+%                     elseif length(station(ev{1}).powers) == 1
+%                         power = station(ev{1}).powers;
+%                     end
                     if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the uncontrol charging
                         sim.profit_charging_uc(i_k) = sim.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     else % flexible charging
                         sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     end
                     sim.power(i_k) = sim.power(i_k) + power;
-                    % ===== TODO: add power_record to user
-                    % station([?EV1?]).power_traj = opt.power(t);
                     
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
@@ -159,6 +164,16 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
+                        flex_list = station('FLEX_list');
+                        asap_list = station('ASAP_list');
+                        if any(strcmp(flex_list,ev{1})) % remove from flex list
+                            rm_idx = find(contains(flex_list,ev{1}));
+                            station('FLEX_list') = [flex_list(1:rm_idx-1) flex_list(rm_idx+1:end)];
+                        elseif any(strcmp(asap_list,ev{1})) % remove from asap list
+                            rm_idx = find(contains(asap_list,ev{1}));
+                            station('ASAP_list') = [asap_list(1:rm_idx-1) asap_list(rm_idx+1:end)];
+                        end
+                            
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;
                         station('num_empty_pole') = station('num_empty_pole') + 1;
                     end 

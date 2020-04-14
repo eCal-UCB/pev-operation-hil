@@ -1,4 +1,4 @@
-function opt = run_opt_station(station, k)
+function [station, opt] = run_opt_station(station, k)
 % optimization on station level
 tic;
 par = get_glob_par();
@@ -10,12 +10,15 @@ prb = get_glob_prb();
 
 %% Run algorithm -- block coordinate descent
 
+test_tic = tic;
+for idx = 1:1
+    disp(idx)
 % compute time window of FLEX user
 num_flex_user = length(station('FLEX_list'));
 user_keys = station('FLEX_list');
 flex_user_info = zeros(num_flex_user, 6);
 for i = 1:num_flex_user
-    user = station(user_keys{i,1});
+    user = station(user_keys{i});
     start_time = user.time.start/par.Ts; end_time = user.time.end/par.Ts;  
     N_remain = end_time-k/par.Ts;
     TOU_idx = k/par.Ts-start_time+1; % indicate electricity price, also for calculating updated SOC
@@ -61,11 +64,24 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
 %         fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
 %     end
 end
+end
+fprintf('elapsed time for running %.f times is: %.2f seconds. \n', idx, toc(test_tic))
 
 % ===== TODO: update station users profile
 % iterate thru EV in station
 % replace x and powers in user
 % add field of SOC in user
+
+% update flex user profile
+for i = 1:length(user_keys)
+    user = station(user_keys{i});
+    end_time = user.time.end/par.Ts;  
+    N_remain = end_time-k/par.Ts;
+    user.x = xk((i)*var_dim_constant+1:(i+1)*var_dim_constant);
+    user.powers = xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant);
+    user.SOC = xk((i)*var_dim_constant+1:i*var_dim_constant+N_remain+1);
+    station(user_keys{i}) = user;
+end
 
 opt.z = zk;
 opt.tariff.flex = zk(1);

@@ -1,4 +1,4 @@
-function vk = argmin_v_station(z,x,~,station,k,existing_user_info,var_dim_constant);
+function vk = argmin_v_station(z,x,~,station,k,existing_user_info,var_dim_constant)
 par = get_glob_par();
 prb = get_glob_prb();
 
@@ -54,8 +54,6 @@ function J = constr_J(v)
         existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
     end
     
-    % ==== missing demand charge ====
-    
     % part 1: case 1 - charging-FLEX
 %     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
 %                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1))...
@@ -79,8 +77,8 @@ function J = constr_J(v)
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));
     
-    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj; 
-        new_asap_obj+existing_flex_obj+existing_asap_obj; 
-        new_leave_obj], v) + station('cost_dc') * x(end);
+    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_leave_obj], v);
 end
 end

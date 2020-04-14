@@ -84,8 +84,8 @@ function J = constr_J(z)
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));
     
-    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj; 
-        new_asap_obj+existing_flex_obj+existing_asap_obj; 
-        new_leave_obj], v) + station('cost_dc') * x(end);
+    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_leave_obj], v);
 end
 end

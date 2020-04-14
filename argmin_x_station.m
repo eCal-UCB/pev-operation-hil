@@ -18,16 +18,14 @@ end
 %             sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0))],v); 
 %         
 J = @(xk) constr_J(xk);
-% x_indiv_length = 2*var_dim_constant+1;
-x_indiv_length = var_dim_constant;
 num_flex_user = size(existing_user_info,1);
 
 % inequality constraint
 A_ineq_L = []; b_ineq = zeros(num_flex_user,1);
 % lower bound - power min
-lb = zeros(x_indiv_length*num_flex_user, 1);
+lb = zeros(var_dim_constant*num_flex_user, 1);
 % upper bound - power max
-ub = zeros(x_indiv_length*num_flex_user, 1);
+ub = zeros(var_dim_constant*num_flex_user, 1);
 % equality constraints - system dynamics
 A_eq = []; b_eq = [];
 for idx = 1:size(existing_user_info,1)
@@ -36,7 +34,7 @@ for idx = 1:size(existing_user_info,1)
    SOC_need = existing_user_info(idx,5);
    SOC_init = existing_user_info(idx,6);
    % ==== inequality constraint
-   AL_ineq = [zeros(1,N) -1]; AR_ineq = zeros(1,x_indiv_length-N-1); % temporary L and R block
+   AL_ineq = [zeros(1,N) -1]; AR_ineq = zeros(1,var_dim_constant-N-1); % temporary L and R block
 %    A_ineq(idx,:) = [AL_ineq AR_ineq];
    A_ineq_L = blkdiag(A_ineq_L, [AL_ineq AR_ineq]);
    b_ineq(idx) = -SOC_need; % SOC_need
@@ -46,17 +44,17 @@ for idx = 1:size(existing_user_info,1)
    lb2 = prb.station.pow_min.*ones(N,1);
 %    lb3 = zeros(2*(var_dim_constant-N),1);
    lb3 = zeros(var_dim_constant-2*N-1,1);
-   lb((idx-1)*x_indiv_length+1:idx*x_indiv_length,1) = [lb1;lb2;lb3];
+   lb((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [lb1;lb2;lb3];
    
    % upper bound - power max
    ub1 = ones(N+1,1); 
    ub2 = prb.station.pow_max.*ones(N,1);
 %    ub3 = zeros(2*(var_dim_constant-N),1);
    ub3 = zeros(var_dim_constant-2*N-1,1);
-   ub((idx-1)*x_indiv_length+1:idx*x_indiv_length,1) = [ub1;ub2;ub3];
+   ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3];
    
    % equality constraints - system dynamics
-   C1L = [1 zeros(1,N)]; C1R = zeros(1,x_indiv_length-N-1); % initial soc
+   C1L = [1 zeros(1,N)]; C1R = zeros(1,var_dim_constant-N-1); % initial soc
    C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
    C2R = [-diag(par.eff*par.Ts/prb.user.batt_cap*ones(1,N)) zeros(N,var_dim_constant-2*N-1)];
    d1 = SOC_init; 
@@ -75,7 +73,7 @@ for j = 1:C
         % iterate through new user + existing flex user
         N = existing_user_info(i,3); % get user N_flex, aka the remian duration
         if j < N
-            M_dc_L(2*(j-1)+1, (N+1)+j+(i-1)*x_indiv_length) = 1; % (N+1) skips the soc
+            M_dc_L(2*(j-1)+1, (N+1)+j+(i-1)*var_dim_constant) = 1; % (N+1) skips the soc
         end
     end
     M_dc_R(2*(j-1)+1,j+1) = -1;
@@ -149,8 +147,8 @@ function J = constr_J(x)
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));
     
-    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj; 
-        new_asap_obj+existing_flex_obj+existing_asap_obj; 
-        new_leave_obj], v) + station('cost_dc') * x(end);
+    J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * x(end); 
+        new_leave_obj], v);
 end
 end
