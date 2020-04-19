@@ -49,8 +49,8 @@ station('FLEX_list') = [];
 station('ASAP_list') = [];
 station('num_empty_pole') = par.station.num_poles;
 station('D_init') = 0;
-station('pow_cap') = 50 ; % this value is arbitrary for now
-station('cost_dc') = 5; % this value is arbitrary for now
+station('pow_cap') = 6*6.6 ; % this value is arbitrary for now
+station('cost_dc') = 20; % this value is arbitrary for now
 sim.events = events;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
@@ -69,7 +69,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    set_glob_prb(init_prb(events.inp{inds_events_k(j)}));
 
                    % find optimal tariff
-                   if isempty(station('FLEX_list'))
+                   if isempty(station('FLEX_list')) && isempty(station('ASAP_list'))
                        opt = run_opt();
                    else
                        [station, opt] = run_opt_station(station, k);

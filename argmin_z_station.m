@@ -47,11 +47,7 @@ function J = constr_J(z)
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        try
         existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
-        catch
-            a = 1;
-        end
     end
     % existing asap user
     user_keys = station('ASAP_list');
