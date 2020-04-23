@@ -31,5 +31,5 @@ end
 % fprintf('default penalty: %.2f\n', par.base.tariff.overstay);
 % fprintf('optimal penalty: %.2f\n', opt.tariff.overstay);
 % fprintf('default duration: %.2f\n', prb.user.overstay_duration);
-% fprintf('optimal duration: %.2f\n', duration);
+fprintf('optimal duration: %.2f\n', duration);
 end

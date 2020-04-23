@@ -109,17 +109,21 @@ function J = constr_J(x)
         adj_constant = (i-1) * var_dim_constant; % constant to identify where to start on x
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
-        overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        overstay_cost = (user.time.leave - user.time.end) * user.z(3); % maybe not need this
+        parking_cost = (user.time.leave - k) * user.z(4); % maybe not need this
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) ...
+            - overstay_cost - parking_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
     existing_asap_obj = 0;
     for i = 1:length(user_keys) % sum of users
         user = station(user_keys{1,i});
-        overstay_cost = (user.time.leave - user.time.end) * user.z(3);
+        overstay_cost = (user.time.leave - user.time.end) * user.z(3); % maybe not need this
+        parking_cost = (user.time.leave - k) * user.z(4); % maybe not need this
         TOU_idx = (k-user.time.start)/par.Ts+1;
-        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) ...
+            - overstay_cost - parking_cost);
     end
     
     % ==== missing demand charge ====
@@ -132,7 +136,7 @@ function J = constr_J(x)
 
     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization 
+                  +par.lambda.h_c * 1/z(3) - (prb.N_flex-k) * z(4); % without convergence regularization 
               
     % part 2: case 2 - charging-ASAP
 %     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
@@ -141,7 +145,7 @@ function J = constr_J(x)
 %                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 
     new_asap_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization
+                  +par.lambda.h_c * 1/z(3) - (prb.N_asap-k) * z(4); % without convergence regularization
 %               +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1)
               
     % part 3: case 3 - leave

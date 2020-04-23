@@ -12,7 +12,7 @@ J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par
 %% Run algorithm -- block coordinate descent
 itermax = 1e4;
 count = 0; improve = inf;
-zk = ones(4,1);                         % [z_c, z_uc, y, 1];
+zk = ones(5,1);                         % [z_c, z_uc, y, z_park, 1];
 xk = ones(2*prb.N_flex+1,1);            % [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1+#of FLEX
 vk = 1/3*ones(3,1);                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);

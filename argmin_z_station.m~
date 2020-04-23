@@ -25,11 +25,11 @@ J = @(zk) constr_J(zk);
 A = [1 -1 0 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
-lb = [max(prb.TOU) * ones(3,1); 1; 0]; % parking price minimum 1
-ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU); 1];
+lb = [max(prb.TOU) * ones(3,1); 1; 0]; % parking price minimum $1
+ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU); 5; 1]; % parking price maximum $5
 
 % equality constraint
-Aeq = [0 0 0 1]; beq = 1;
+Aeq = [0 0 0 0 1]; beq = 1;
 
 % solve optimization
 options = optimoptions('fmincon','Display','off');
@@ -46,17 +46,21 @@ function J = constr_J(z)
         adj_constant = (i-1) * var_dim_constant; % constant to identify where to start on x
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
-        overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        overstay_cost = (user.time.leave - user.time.end) * user.z(3); % maybe not need this
+        parking_cost = (user.time.leave - k) * user.z(4); % maybe not need this
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) ... 
+            - overstay_cost - parking_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
     existing_asap_obj = 0;
     for i = 1:length(user_keys) % sum of users
         user = station(user_keys{1,i});
-        overstay_cost = (user.time.leave - user.time.end) * user.z(3);
+        overstay_cost = (user.time.leave - user.time.end) * user.z(3); % maybe not need this
+        parking_cost = (user.time.leave - k) * user.z(4); % maybe not need this
         TOU_idx = (k-user.time.start)/par.Ts+1;
-        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) ...
+            - overstay_cost - parking_cost);
     end
     
     % part 1: case 1 - charging-FLEX
@@ -67,7 +71,7 @@ function J = constr_J(z)
 
     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization 
+                  +par.lambda.h_c * 1/z(3) + (prb.N_flex-k) * z(4); % without convergence regularization 
               
     % part 2: case 2 - charging-ASAP
 %     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
