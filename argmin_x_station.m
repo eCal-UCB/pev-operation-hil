@@ -110,7 +110,7 @@ function J = constr_J(x)
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
@@ -119,7 +119,7 @@ function J = constr_J(x)
         user = station(user_keys{1,i});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
         TOU_idx = (k-user.time.start)/par.Ts+1;
-        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) + overstay_cost);
+        existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
     end
     
     % ==== missing demand charge ====
