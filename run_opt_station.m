@@ -42,7 +42,7 @@ xk = ones(var_dim_constant*(num_flex_user+2), 1); % [soc0_newuser .. socN_newuse
 
 itermax = 1e4;
 count = 0; improve = inf;
-zk = ones(4,1);                         % [z_c, z_uc, y, 1];
+zk = ones(5,1);                         % [z_c, z_uc, y, z_park, 1];
 vk = 1/3*ones(3,1);                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
 while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
