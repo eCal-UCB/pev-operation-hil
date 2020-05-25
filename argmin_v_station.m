@@ -72,7 +72,7 @@ function J = constr_J(v)
 
     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
                         +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization
+                  +par.lambda.h_uc * 1/z(3); % without convergence regularization
               
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));

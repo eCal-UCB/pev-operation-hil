@@ -25,8 +25,8 @@ J = @(zk) constr_J(zk);
 A = [1 -1 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
-lb = [max(prb.TOU) * ones(3,1); 0];
-ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU); 1];
+lb = [min(prb.TOU) * ones(3,1); 0];
+ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(par.TOU); 1];
 
 % equality constraint
 Aeq = [0 0 0 1]; beq = 1;
@@ -77,7 +77,7 @@ function J = constr_J(z)
 
     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
                         +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization
+                  +par.lambda.h_uc * 1/z(3); % without convergence regularization
               
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));

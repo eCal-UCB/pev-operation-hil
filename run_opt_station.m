@@ -23,7 +23,11 @@ for i = 1:num_flex_user
     N_remain = end_time-k/par.Ts;
     TOU_idx = k/par.Ts-start_time+1; % indicate electricity price, also for calculating updated SOC
     SOC_need = user.prb.user.SOC_need;
-    SOC_now = user.prb.user.SOC_init + sum(user.powers(1:TOU_idx-1)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
+    try
+        SOC_now = user.prb.user.SOC_init + sum(user.powers(1:TOU_idx-1)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
+    catch
+        SOC_now = user.prb.user.SOC_init + sum(user.powers(1:end)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
+    end
     flex_user_info(i, :) = [start_time, end_time, N_remain, TOU_idx, SOC_need, SOC_now];
 end
 new_user = prb.user;

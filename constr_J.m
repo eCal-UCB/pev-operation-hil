@@ -16,7 +16,11 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
     user_keys = station('ASAP_list');
     existing_asap_obj = 0;
     for i = 1:length(user_keys) % sum of users
-        user = station(user_keys{i});
+        try
+            user = station(user_keys{i});
+        catch
+            a = 1;
+        end
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
         TOU_idx = (k-user.time.start)/par.Ts+1;
         existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);

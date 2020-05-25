@@ -40,7 +40,11 @@ for idx = 1:size(existing_user_info,1)
    b_ineq(idx) = -SOC_need; % SOC_need
    
    % lower bound - power min
+%    try
    lb1 = zeros(N+1,1); lb1(end) = SOC_need;
+%    catch
+%        a = 1;
+%    end
    lb2 = prb.station.pow_min.*ones(N,1);
 %    lb3 = zeros(2*(var_dim_constant-N),1);
    lb3 = zeros(var_dim_constant-2*N-1,1);
@@ -141,7 +145,7 @@ function J = constr_J(x)
 %                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 
     new_asap_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
-                  +par.lambda.h_c * 1/z(3); % without convergence regularization
+                  +par.lambda.h_uc * 1/z(3); % without convergence regularization
 %               +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1)
               
     % part 3: case 3 - leave

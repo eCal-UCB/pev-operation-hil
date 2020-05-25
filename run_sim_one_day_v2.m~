@@ -133,7 +133,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     if ~isempty(keys)
         for ev = keys
             if contains(ev{1},'EV')
-                if  k < station(ev{1}).time.end % is charging duration
+                if  k <= station(ev{1}).time.end % is charging duration
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     % add actual power_ record to user
                     opt = station(ev{1});
@@ -164,22 +164,19 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
+                        flex_list = station('FLEX_list');
+                        asap_list = station('ASAP_list');
+                        if any(strcmp(flex_list,ev{1})) % remove from flex list
+                            rm_idx = find(contains(flex_list,ev{1}));
+                            station('FLEX_list') = [flex_list(1:rm_idx-1) flex_list(rm_idx+1:end)];
+                        elseif any(strcmp(asap_list,ev{1})) % remove from asap list
+                            rm_idx = find(contains(asap_list,ev{1}));
+                            station('ASAP_list') = [asap_list(1:rm_idx-1) asap_list(rm_idx+1:end)];
+                        end
                             
                         station('num_occupied_pole') = station('num_occupied_pole') - 1;
                         station('num_empty_pole') = station('num_empty_pole') + 1;
                     end 
-                    
-                    % remove ev from flex and asap list, it needs no
-                    % charging
-                    flex_list = station('FLEX_list');
-                    asap_list = station('ASAP_list');
-                    if any(strcmp(flex_list,ev{1})) % remove from flex list
-                        rm_idx = find(contains(flex_list,ev{1}));
-                        station('FLEX_list') = [flex_list(1:rm_idx-1) flex_list(rm_idx+1:end)];
-                    elseif any(strcmp(asap_list,ev{1})) % remove from asap list
-                        rm_idx = find(contains(asap_list,ev{1}));
-                        station('ASAP_list') = [asap_list(1:rm_idx-1) asap_list(rm_idx+1:end)];
-                    end
                 end
             elseif contains(ev{1},'occ')
                 sim.occ.total(i_k) = station('num_occupied_pole');
