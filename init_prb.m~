@@ -26,8 +26,8 @@ end
 % dcm params
 % asc_flex    = 2 + 0.2 * prb.user.duration; 
 % asc_asap    = 2.5;
-asc_flex    = 1 + 0.0401*prb.user.duration - 5.8531*prb.user.SOC_init; %5.0583
-asc_asap    = 1 + 0.0865*prb.user.duration - 5.8531*prb.user.SOC_init; %3.7088
+asc_flex    = 5.0583+0.0401*prb.user.duration-5.8531*prb.user.SOC_init;
+asc_asap    = 3.7088+0.0401*prb.user.duration-5.8531*prb.user.SOC_init;
 asc_leaving = 0;
 energy_need = prb.user.SOC_need * prb.user.batt_cap;
 % prb.dcm.charging_flex.params = [-1 0 0 asc_flex]';          % DCM parameters for choice 1 -- charging with flexibility 

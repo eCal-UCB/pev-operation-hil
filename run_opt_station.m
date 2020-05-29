@@ -87,6 +87,8 @@ for i = 1:length(user_keys)
     station(user_keys{i}) = user;
 end
 
+zk
+
 opt.z = zk;
 opt.tariff.flex = zk(1);
 opt.tariff.asap = zk(2);

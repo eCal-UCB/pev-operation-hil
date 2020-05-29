@@ -16,11 +16,7 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
     user_keys = station('ASAP_list');
     existing_asap_obj = 0;
     for i = 1:length(user_keys) % sum of users
-        try
-            user = station(user_keys{i});
-        catch
-            a = 1;
-        end
+        user = station(user_keys{i});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
         TOU_idx = (k-user.time.start)/par.Ts+1;
         existing_asap_obj = existing_asap_obj + (sum(user.asap.powers*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
@@ -49,9 +45,13 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));
     
+    try
     J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj; 
         new_asap_obj+existing_flex_obj+existing_asap_obj; 
         new_leave_obj], v) + station('cost_dc') * x(end);
+    catch
+        a = 1;
+    end
 end
 
 %J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);

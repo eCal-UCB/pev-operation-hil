@@ -25,7 +25,7 @@ J = @(zk) constr_J(zk);
 A = [1 -1 0 0]; b = 0; % charging tariff for charging asap must be bigger
      
 % lower and upper bound
-lb = [min(prb.TOU) * ones(3,1); 0];
+lb = [min(prb.TOU) * ones(2,1); 2*min(prb.TOU); 0];
 ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(par.TOU); 1];
 
 % equality constraint

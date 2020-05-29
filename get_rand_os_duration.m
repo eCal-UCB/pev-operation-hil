@@ -23,6 +23,9 @@ try
 catch
     duration = range(find(cdf>=r,1))/scale;
 end
+if sum(size(duration) == [1 0]) == 2
+    duration = 32;
+end
 overstay_endtime = opt.time.end + duration;
 if isnan(duration)
     error('[ ERROR] nan duration');
