@@ -78,6 +78,9 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    station('D_init') = opt.peak_pow; % update demand charge
                    
                    % driver makes choice
+                   if par.sim.isFixedSeed
+                       rng(1);
+                   end
                    rc = rand;
                    if rc <= opt.prob.flex
                        opt.choice = 0; % charging with flexibility

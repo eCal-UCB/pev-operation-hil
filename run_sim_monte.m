@@ -53,6 +53,7 @@ end
 %% Visualization
 if nargin == 0
     vis_sim_monte(sim_results,sim_results_base);
+    vis_sim_monte_vk(sim_results);
 end
 
 end

@@ -55,7 +55,7 @@ for idx = 1:size(existing_user_info,1)
    ub2 = prb.station.pow_max.*ones(N,1);
 %    ub3 = zeros(2*(var_dim_constant-N),1);
    ub3 = zeros(var_dim_constant-2*N-1,1);
-   ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3];
+   ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3]; %1:power, 2:soc, 3:demanc charge
    
    % equality constraints - system dynamics
    C1L = [1 zeros(1,N)]; C1R = zeros(1,var_dim_constant-N-1); % initial soc
