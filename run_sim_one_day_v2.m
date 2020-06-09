@@ -1,5 +1,5 @@
 function varargout = run_sim_one_day_v2(varargin)
-clear;clc;close all;
+% clear;clc;close all;
 % This script is to simulate EV charging station operations where the
 % charging tariff is determined real-time with taking account into EV
 % drivers' behaviors. The overall objective of the tariff control is to

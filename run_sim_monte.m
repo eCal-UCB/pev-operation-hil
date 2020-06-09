@@ -34,7 +34,8 @@ for n = 1:num_sim
     fprintf('======================== %d/%d =======================\n',...
         n,num_sim);
     t1= tic;
-    sim_results{n} = run_sim_one_day(par);
+%     sim_results{n} = run_sim_one_day(par);
+    sim_results{n} = run_sim_one_day_v2(par);
     sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
     fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
 end

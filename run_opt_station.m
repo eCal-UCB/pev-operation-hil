@@ -64,11 +64,11 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     % compute residual
     improve = Jk(count)-constr_J(par,prb,zk,xk,vk,station,k,existing_user_info,var_dim_constant);
     
-    if count > 0
+%     if count > 0
 %         fprintf('[ OPT] iter: %d, improve: %.3f, objective: %.3f\n',count,improve,Jk(count));
-        fprintf('[ OPT] iter: %d, probability: ', count);
-        vk
-    end
+%         fprintf('[ OPT] iter: %d, probability: ', count);
+%         vk
+%     end
     
 %     if mod(count,1) == 0
 %         fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
@@ -93,7 +93,7 @@ for i = 1:length(user_keys)
     station(user_keys{i}) = user;
 end
 
-zk
+% zk
 
 opt.z = zk;
 opt.tariff.flex = zk(1);
