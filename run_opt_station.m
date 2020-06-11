@@ -112,6 +112,7 @@ opt.J = Jk(1:count);
 opt.num_iter = count;
 opt.prb = prb;
 opt.par = par;
+opt.var_dim_constant = var_dim_constant;
 
 opt.time.start = prb.user.time;
 opt.time.end_flex = prb.user.time + prb.user.duration;

@@ -11,7 +11,7 @@ par.monte.num_sims = 200;
 par.sim.starttime = 7;
 par.sim.endtime = 22;
 par.sim.isFixedEventSequence = false;
-par.sim.isFixedSeed = true;
+par.sim.isFixedSeed = false;
 par.sim.num_events = 50;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
@@ -26,8 +26,8 @@ par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.217*ones(1,96-86)];      % 22-24
 
 % charging station config
-par.station.num_poles = 6;                 % number of charging poles
-par.eff = 0.89;                             % power efficiency
+par.station.num_poles = 8;                 % number of charging poles
+par.eff = 0.92;                             % power efficiency
 
 % dcm params
 par.dcm.choices = [{'charging with flexibility'},{'charging asap'},{'leaving without charging'}];
@@ -43,9 +43,9 @@ par.pdf.visit = [0.1*ones(1,7) ...    % 0-7
 % regularization params
 par.lambda.x = 10;
 par.lambda.z_c = 10;
-par.lambda.z_uc = 0.1;
-par.lambda.h_c = 0.01; % TODO: should be average overstay penalty in real data, should move to par
-par.lambda.h_uc = 0.1; % TODO: should be average overstay penalty in real data, should move to par
+par.lambda.z_uc = 10;
+par.lambda.h_c = 10; % TODO: should be average overstay penalty in real data, should move to par
+par.lambda.h_uc = 10; % TODO: should be average overstay penalty in real data, should move to par
 par.mu = 1e4;
 par.soft_v_eta = 1e-3; % softening equality constraint for v; to avoid numerical error
 par.opt.eps = 1e-4;

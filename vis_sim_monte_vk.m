@@ -10,6 +10,9 @@ if nargin == 0
     sim_results_base = run_sim_baseline(data); 
 elseif nargin == 1
     sim_results = varargin{1}; 
+elseif nargin == 2
+    sim_results = varargin{1}; 
+    sim_results_base = varargin{2};
 end
     
 flex_prob = [];
