@@ -24,7 +24,7 @@ for i = 1:num_flex_user
     TOU_idx = k/par.Ts-start_time+1; % indicate electricity price, also for calculating updated SOC
     SOC_need = user.prb.user.SOC_need;
     try
-        SOC_now = user.prb.user.SOC_init + sum(user.powers(1:TOU_idx-1)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
+        SOC_now = user.prb.user.SOC_init + sum(user.power_traj_actual(1:TOU_idx-1)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
     catch
         SOC_now = user.prb.user.SOC_init + sum(user.powers(1:end)) * user.par.eff * par.Ts / user.prb.user.batt_cap;
     end
@@ -93,7 +93,6 @@ for i = 1:length(user_keys)
     station(user_keys{i}) = user;
 end
 
-% zk
 
 opt.z = zk;
 opt.tariff.flex = zk(1);

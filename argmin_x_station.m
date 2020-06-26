@@ -99,8 +99,12 @@ A_eq = [A_eq, zeros(size(A_eq,1), size(A_ineq,2)-size(A_eq,2))];
 lb = [lb; station('D_init'); zeros(size(A_ineq,2)-length(lb)-1,1)];
 ub = [ub; station('D_init'); ones(size(A_ineq,2)-length(ub)-1,1)*station('pow_cap')];
 % solve optimization
-options = optimoptions('fmincon','Display','off');
-xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
+options = optimoptions('fmincon','Display','off','MaxFunEvals',30000);
+% xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
+[xk,fval,exitflag,output,lambda,grad,hessian] = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
+if xk(1) > xk(2)
+    a = 1;
+end
 
 function J = constr_J(x)
 % par, prb, z, x, v
