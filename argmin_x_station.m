@@ -34,9 +34,9 @@ for idx = 1:size(existing_user_info,1)
    SOC_feas_max = (prb.station.pow_max * N * par.Ts * par.eff)/prb.user.batt_cap;
    SOC_need = existing_user_info(idx,5);
    SOC_init = existing_user_info(idx,6);
-   if SOC_need > SOC_feas_max+SOC_init
-       warning("YOU NEED TOO MUCH!!!!");
-   end
+%    if SOC_need > SOC_feas_max+SOC_init
+%        warning("YOU NEED TOO MUCH!!!!");
+%    end
    SOC_need = min(SOC_need, SOC_feas_max+SOC_init);
    % ==== inequality constraint
    AL_ineq = [zeros(1,N) -1]; AR_ineq = zeros(1,var_dim_constant-N-1); % temporary L and R block
@@ -60,7 +60,7 @@ for idx = 1:size(existing_user_info,1)
    ub2 = prb.station.pow_max.*ones(N,1);
 %    ub3 = zeros(2*(var_dim_constant-N),1);
    ub3 = zeros(var_dim_constant-2*N-1,1);
-   ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3]; %1:power, 2:soc, 3:demanc charge
+   ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3]; %1:power, 2:soc, 3:demand charge
    
    % equality constraints - system dynamics
    C1L = [1 zeros(1,N)]; 

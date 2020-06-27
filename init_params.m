@@ -5,7 +5,7 @@ par.sens_analysis.num_poles = 2:2:16;
 % par.sens_analysis.num_poles = [2,3];
 
 % monte carlo
-par.monte.num_sims = 10;
+par.monte.num_sims = 200;
 
 % each one day simulation
 par.sim.starttime = 7;
