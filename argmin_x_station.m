@@ -31,8 +31,13 @@ A_eq = []; b_eq = [];
 for idx = 1:size(existing_user_info,1)
     % iterate through new user + existing flex user
    N = existing_user_info(idx,3); % get user N_flex, aka the remian duration
+   SOC_feas_max = (prb.station.pow_max * N * par.Ts * par.eff)/prb.user.batt_cap;
    SOC_need = existing_user_info(idx,5);
    SOC_init = existing_user_info(idx,6);
+   if SOC_need > SOC_feas_max+SOC_init
+       warning("YOU NEED TOO MUCH!!!!");
+   end
+   SOC_need = min(SOC_need, SOC_feas_max+SOC_init);
    % ==== inequality constraint
    AL_ineq = [zeros(1,N) -1]; AR_ineq = zeros(1,var_dim_constant-N-1); % temporary L and R block
 %    A_ineq(idx,:) = [AL_ineq AR_ineq];
@@ -58,9 +63,12 @@ for idx = 1:size(existing_user_info,1)
    ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2;ub3]; %1:power, 2:soc, 3:demanc charge
    
    % equality constraints - system dynamics
-   C1L = [1 zeros(1,N)]; C1R = zeros(1,var_dim_constant-N-1); % initial soc
+   C1L = [1 zeros(1,N)]; 
+   C1R = zeros(1,var_dim_constant-N-1); % initial soc
+   
    C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
    C2R = [-diag(par.eff*par.Ts/prb.user.batt_cap*ones(1,N)) zeros(N,var_dim_constant-2*N-1)];
+   
    d1 = SOC_init; 
    d2 = zeros(N,1);
 
@@ -100,9 +108,11 @@ lb = [lb; station('D_init'); zeros(size(A_ineq,2)-length(lb)-1,1)];
 ub = [ub; station('D_init'); ones(size(A_ineq,2)-length(ub)-1,1)*station('pow_cap')];
 % solve optimization
 options = optimoptions('fmincon','Display','off','MaxFunEvals',30000);
+options.Algorithm = 'sqp';
+
 % xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
 [xk,fval,exitflag,output,lambda,grad,hessian] = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
-if xk(1) > xk(2)
+if xk(1) > xk(2)+0.0001
     a = 1;
 end
 

@@ -31,9 +31,12 @@ ub2 = prb.station.pow_max.*ones(N,1);
 ub = [ub1;ub2];
 
 % equality constraints - system dynamics
-C1L = [1 zeros(1,N)]; C1R = zeros(1,N); % initial soc
+C1L = [1 zeros(1,N)]; % initial soc for the first element
+C1R = zeros(1,N); 
+
 C2L = [diag(-1.*ones(1,N)) zeros(N,1)] + [zeros(N,1)  diag(ones(1,N))];
-C2R = -diag(par.eff/prb.user.batt_cap*ones(1,N));
+C2R = -diag(par.eff*par.Ts/prb.user.batt_cap*ones(1,N));
+
 d1 = prb.user.SOC_init; 
 d2 = zeros(N,1);
 
@@ -43,4 +46,7 @@ beq = [d1; d2];
 % solve optimization
 options = optimoptions('fmincon','Display','off');
 xk = fmincon(J,prb.x0,A,b,Aeq,beq,lb,ub,[],options);
+if xk(1) > xk(2)
+    a = 1;
+end
 end
