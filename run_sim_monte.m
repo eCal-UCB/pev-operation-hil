@@ -25,6 +25,7 @@ end
 
 num_sim = par.monte.num_sims; % simulation numbers
 sim_results = cell(num_sim,1);
+sim_results_v2 = cell(num_sim,1);
 sim_results_base = cell(num_sim,1);
 fname = fullfile(pwd,'monte-sim-results', ...
                 sprintf('%s_monte_eps%d_%s_seq_poles%d.mat', ...
@@ -34,8 +35,9 @@ for n = 1:num_sim
     fprintf('======================== %d/%d =======================\n',...
         n,num_sim);
     t1= tic;
-%     sim_results{n} = run_sim_one_day(par);
-    sim_results{n} = run_sim_one_day_v2(par);
+    events = gen_events_one_day(par);
+    sim_results{n} = run_sim_one_day(par,events);
+    sim_results_v2{n} = run_sim_one_day_v2(par,events);
     sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
     fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
 end
@@ -47,6 +49,7 @@ if nargout == 1
     varargout = {};
     arg = {};
     arg.optimal = sim_results;
+    arg.optimal_v2 = sim_results;
     arg.baseline = sim_results_base;
     varargout{1} = arg;
 end
@@ -54,6 +57,8 @@ end
 %% Visualization
 if nargin == 0
     vis_sim_monte(sim_results,sim_results_base);
+    vis_sim_monte(sim_results_v2,sim_results_base);
+    vis_sim_monte(sim_results_v2,sim_results);
     vis_sim_monte_vk(sim_results,sim_results_base);
 end
 

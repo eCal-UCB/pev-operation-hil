@@ -32,7 +32,7 @@ for n = 1:num_sim
     overstay_mean(n) = mean(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0));
     overstay_penalty_mean(n) = mean(sim_results{n}.control(sim_results{n}.control(:,3)~=0,3));
     overstay_tot(n) = sum(sim_results{n}.overstay_duration);
-    profit(n) = sum(sim_results{n}.profit_charging_uc+sim_results{n}.profit_charging_c+sim_results{n}.profit_overstay);
+    profit(n) = sum(sim_results{n}.profit_charging_uc+sim_results{n}.profit_charging_c+sim_results{n}.profit_overstay) - max(sim_results{n}.power) * 18.86 / 30;
     service_tot(n) = sum(sim_results{n}.num_service);
 end
 
@@ -47,7 +47,7 @@ if num_sim_base >= 1 % if there is a baseline
         overstay_mean_base(n) = mean(sim_results_base{n}.overstay_duration(sim_results_base{n}.overstay_duration~=0));
         overstay_penalty_mean_base(n) = mean(sim_results_base{n}.control(sim_results_base{n}.control(:,3)~=0,3));
         overstay_tot_base(n) = sum(sim_results_base{n}.overstay_duration);
-        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay);
+        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay)- max(sim_results{n}.power) * 18.86 / 30;
         service_tot_base(n) = sum(sim_results_base{n}.num_service);
     end
 end
