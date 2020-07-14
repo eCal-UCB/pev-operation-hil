@@ -30,6 +30,6 @@ ub = [2 * max(prb.TOU) * ones(2,1); 10 * max(prb.TOU); 1];
 Aeq = [0 0 0 1]; beq = 1;
 
 % solve optimization
-options = optimoptions('fmincon','Display','off');
+options = optimoptions('fmincon','Display','off','Algorithm','sqp');
 zk = fmincon(J,prb.z0,A,b,Aeq,beq,lb,ub,[],options);
 end

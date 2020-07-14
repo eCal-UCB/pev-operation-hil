@@ -18,7 +18,12 @@ vk = 1/3*ones(3,1);                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
 while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     count = count + 1;
-    Jk(count) = J(zk,xk,vk);    
+    try
+        Jk(count) = J(zk,xk,vk);    
+    catch
+        error('ERROR')
+    end
+    
     
     % update init variables
     prb.z0 = zk; prb.x0 = xk; prb.v0 = vk; set_glob_prb(prb);
@@ -59,5 +64,7 @@ opt.time.start = prb.user.time;
 opt.time.end_flex = prb.user.time + prb.user.duration;
 opt.time.end_asap = prb.user.time + prb.N_asap*par.Ts;
 
-fprintf('[%s OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',datetime('now'),toc,sum(vk),count);
+if par.VIS_DETAIL
+    fprintf('[%s OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',datetime('now'),toc,sum(vk),count);
+end
 end

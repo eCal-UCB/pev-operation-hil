@@ -44,7 +44,7 @@ Aeq = [C1L C1R; C2L C2R];
 beq = [d1; d2];
 
 % solve optimization
-options = optimoptions('fmincon','Display','off');
+options = optimoptions('fmincon','Display','off','Algorithm','sqp');
 xk = fmincon(J,prb.x0,A,b,Aeq,beq,lb,ub,[],options);
 if xk(1) > xk(2)
     a = 1;

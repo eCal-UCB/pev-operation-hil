@@ -75,7 +75,9 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
 %     end
 end
 end
-fprintf('elapsed time for running %.f times is: %.2f seconds. \n', idx, toc(test_tic))
+if par.VIS_DETAIL
+    fprintf('elapsed time for running %.f times is: %.2f seconds. \n', idx, toc(test_tic))
+end
 
 % ===== TODO: update station users profile
 % iterate thru EV in station
@@ -117,5 +119,7 @@ opt.time.start = prb.user.time;
 opt.time.end_flex = prb.user.time + prb.user.duration;
 opt.time.end_asap = prb.user.time + prb.N_asap*par.Ts;
 
-fprintf('[%s OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',datetime('now'),toc,sum(vk),count);
+if par.VIS_DETAIL
+    fprintf('[%s OPT] DONE (%.2f sec) sum(vk) = %.2f, iterations = %d\n',datetime('now'),toc,sum(vk),count);
+end
 end

@@ -30,16 +30,26 @@ sim_results_base = cell(num_sim,1);
 fname = fullfile(pwd,'monte-sim-results', ...
                 sprintf('%s_monte_eps%d_%s_seq_poles%d.mat', ...
                 datestr(now,'mm_dd_yy_HH_MM'),num_sim,s,par.station.num_poles));
-for n = 1:num_sim
+n = 1;
+while n <= num_sim
+            % for n = 1:num_sim
     save(fname);
     fprintf('======================== %d/%d =======================\n',...
         n,num_sim);
     t1= tic;
-    events = gen_events_one_day(par);
-    sim_results{n} = run_sim_one_day(par,events);
-    sim_results_v2{n} = run_sim_one_day_v2(par,events);
-    sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
-    fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
+    try
+        events = gen_events_one_day(par);
+%         disp('Optimize single charger...');
+%         sim_results{n} = run_sim_one_day(par,events);
+        disp('Optimize station...');
+        sim_results{n} = run_sim_one_day_v2(par,events);
+        disp('Run baseline...');
+        sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
+        fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
+        n = n + 1;
+    catch
+        warning(sprintf('Constraint violated. Regenerate count %d',n)); %#ok<SPWRN>
+    end
 end
 tot_time = toc(t0);
 fprintf('[%s SIM] DONE monte carlo simulation, %.2f sec\n',datetime('now'), tot_time);
@@ -49,7 +59,7 @@ if nargout == 1
     varargout = {};
     arg = {};
     arg.optimal = sim_results;
-    arg.optimal_v2 = sim_results;
+%     arg.optimal_v2 = sim_results_v2;
     arg.baseline = sim_results_base;
     varargout{1} = arg;
 end

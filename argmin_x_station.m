@@ -97,7 +97,7 @@ A_ineq = [A_ineq_L, A_ineq_R; M_dc_L, M_dc_R];
 b2 = zeros(2*(C), 1);
 % b2(1) = station('D_init'); b2(2) = -station('D_init');
 num_asap_user = length(station('ASAP_list'));
-for j = 1:C
+for j = 1:C     
     b2(2*(j-1)+1) = -num_asap_user * prb.station.pow_max;
 end
 b_ineq = [b_ineq; b2];

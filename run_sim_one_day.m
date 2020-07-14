@@ -22,7 +22,7 @@ function varargout = run_sim_one_day(varargin)
 % clear
 
 %% Initialization
-fprintf('[%s INIT] initializing...\n',datetime('now'));
+% fprintf('[%s INIT] initializing...\n',datetime('now'));
 if nargin == 0
     par = set_glob_par(init_params());
     events = gen_events_one_day(par);
@@ -36,7 +36,9 @@ else
     error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
 end
 
-fprintf('[%s INIT] DONE\n',datetime('now'));
+if par.VIS_DETAIL
+    fprintf('[%s INIT] INITIALIZATION DONE\n',datetime('now'));
+end
 
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
@@ -83,7 +85,9 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    sim.choice_probs(i_event,:) = opt.v;
                    sim.choice(i_event) = opt.choice;
                    sim.control(i_event,:) = opt.z(1:3);
-                   fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+                   if par.VIS_DETAIL
+                    fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+                   end
 
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
@@ -95,10 +99,12 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        station(['EV' num2str(sim.tot_decision)]) = opt;
                    end 
                 else
-                    if station('num_empty_pole') == 0
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
-                    else
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                    if par.VIS_DETAIL
+                        if station('num_empty_pole') == 0
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
+                        else
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                        end
                     end
                 end
             end

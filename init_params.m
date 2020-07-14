@@ -5,7 +5,7 @@ par.sens_analysis.num_poles = 2:2:16;
 % par.sens_analysis.num_poles = [2,3];
 
 % monte carlo
-par.monte.num_sims = 200;
+par.monte.num_sims = 100;
 
 % each one day simulation
 par.sim.starttime = 7;
@@ -26,7 +26,7 @@ par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.217*ones(1,96-86)];      % 22-24
 
 % charging station config
-par.station.num_poles = 8;                 % number of charging poles
+par.station.num_poles = 15;                 % number of charging poles
 par.eff = 0.92;                             % power efficiency
 
 % dcm params
@@ -47,6 +47,12 @@ par.lambda.z_uc = 10;
 par.lambda.h_c = 10; % TODO: should be average overstay penalty in real data, should move to par
 par.lambda.h_uc = 10; % TODO: should be average overstay penalty in real data, should move to par
 par.mu = 1e4;
-par.soft_v_eta = 1e-3; % softening equality constraint for v; to avoid numerical error
+par.soft_v_eta = 1e-2; % softening equality constraint for v; to avoid numerical error
 par.opt.eps = 1e-4;
+
+
+% debug mode
+par.VIS_DETAIL = false;
 end
+
+

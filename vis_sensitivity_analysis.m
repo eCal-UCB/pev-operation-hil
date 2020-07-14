@@ -184,24 +184,31 @@ set(gca, 'fontsize' , 15);
 legend('W/ incentive','W/o incentive','location','nw'); 
 
 %% visualize profit by charging option/overstay
-figure;
+figure(9);
 subplot(121);
-bar(num_poles, [profit_charging_uc_sum/num_monte, profit_charging_c_sum/num_monte, profit_overstay_sum/num_monte]);
+num_sim_in_monte = length(sim_results);
+b=bar(num_poles, [profit_charging_uc_sum, profit_charging_c_sum, profit_overstay_sum]/num_sim_in_monte);
 % xlabel('Number of poles');
-ylabel('Profit [$]');
-title('Average Profit Distributions [with Incentive Control]');
+ylabel('Profit ($)');
+title({'Average Profit Distributions','[with Incentive Control]'});
 xlabel('Number of poles');
 legend('Charging-Flex','Charging-ASAP','Overstay');
 % ylim([0, 200]);
-set(gca,'fontsize',15); grid on; 
+set(gca,'fontsize',20); grid on;  
+ylim([0 max(max([profit_charging_uc_sum, profit_charging_c_sum, profit_overstay_sum]/num_sim_in_monte))+10]);
 
 subplot(122);
-bar(num_poles, [profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base/num_monte]);
+hb=bar(num_poles, [profit_charging_uc_sum_base, profit_overstay_sum_base]/num_sim_in_monte);
+hb(1).FaceColor = [0.8500 0.3250 0.0980];
+hb(2).FaceColor = [0.9290 0.6940 0.1250];
+ylim([0 max(max([profit_charging_uc_sum, profit_charging_c_sum, profit_overstay_sum]/num_sim_in_monte))+10]);
+
 xlabel('Number of poles');
 % ylabel('Profit [$]');
-title('Average Profit Distributions [without Incentive Control]');
+title({'Average Profit Distributions','[without Incentive Control]'});
 xlabel('Number of poles');
-legend('Charging','Overstay')
-% ylim([0, 200]);
-set(gca,'fontsize',15); grid on; 
+% legend('Charging','Overstay')
+% ylim([0, max()]);
+set(gca,'fontsize',20); grid on; 
+%
 end
