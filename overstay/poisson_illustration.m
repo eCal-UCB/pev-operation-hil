@@ -7,7 +7,7 @@ for lambda = 0.3:0.1:0.7
 end
 
 legend('y_1','y_2','y_3','y_4','y_5','FontSize',15)
-xlabel('Overstay duration [time step]','FontSize',15)
+xlabel('Overstay duration [hour(s)]','FontSize',15)
 % 
 % for lambda = 0.3:0.1:0.7
 % %     plot(1/lambda, exp(-1/lambda)*(1/lambda)^(1/lambda)/factorial(round(1/lambda)),'o','MarkerSize',12)
