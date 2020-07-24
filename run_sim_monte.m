@@ -31,6 +31,10 @@ fname = fullfile(pwd,'monte-sim-results', ...
                 sprintf('%s_monte_eps%d_%s_seq_poles%d.mat', ...
                 datestr(now,'mm_dd_yy_HH_MM'),num_sim,s,par.station.num_poles));
 n = 1;
+
+if par.sim.isFixedSeed
+    seed_list = linspace(1, num_sim, num_sim);
+end
 while n <= num_sim
             % for n = 1:num_sim
     save(fname);
@@ -38,7 +42,12 @@ while n <= num_sim
         n,num_sim);
     t1= tic;
     try
-        events = gen_events_one_day(par);
+        if par.sim.isFixedSeed
+            seed_val = seed_list(n);
+            events = gen_events_one_day(par, seed_val);
+        else
+            events = gen_events_one_day(par);
+        end
 %         disp('Optimize single charger...');
 %         sim_results{n} = run_sim_one_day(par,events);
         disp('Optimize station...');
