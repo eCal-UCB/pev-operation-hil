@@ -27,7 +27,6 @@ else % with multi random sequences of events
     num_events = par.sim.num_events; % by default. 
     act_data = readtable('real_act_data.csv');
     event_idx = sort(randi([1 height(act_data)], 1, num_events));
-    event_idx
 end
 
 % build up events structure

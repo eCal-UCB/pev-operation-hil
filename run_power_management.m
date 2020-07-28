@@ -1,8 +1,20 @@
 % This script runs power management optimization only.
+function varargout = run_power_management(varargin)
 
 %% Initialization
-par = set_glob_par(init_params());
-events = gen_events_one_day(par);
+if nargin == 0
+    par = set_glob_par(init_params());
+    if par.sim.isFixedSeed
+        seed_val = 3;
+        events = gen_events_one_day(par, seed_val);
+    else
+        events = gen_events_one_day(par);
+    end
+elseif nargin == 2
+    par = varargin{1};
+    events = varargin{2};
+end
+
 
 %% Simulation -- single charger
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
@@ -369,10 +381,16 @@ end
 
 
 %% Visualize
+viz = false;
+if viz
+    plot(sim_single.t, sim_single.power, 'linewidth',1.5); hold on; 
+    plot(sim_station.t, sim_station.power, 'linewidth',1.5); 
+    plot(sim_base.t, sim_base.power, 'linewidth',1.5); hold off; 
+    set(gca, 'fontsize',15); grid on; 
+    legend('Single','Station','Baseline'); 
+    xlabel('Time of the day [hr]'); ylabel('Power [kW]');
+end
 
-plot(sim_single.t, sim_single.power, 'linewidth',1.5); hold on; 
-plot(sim_station.t, sim_station.power, 'linewidth',1.5); 
-plot(sim_base.t, sim_base.power, 'linewidth',1.5); hold off; 
-set(gca, 'fontsize',15); grid on; 
-legend('Single','Station','Baseline'); 
-xlabel('Time of the day [hr]'); ylabel('Power [kW]');
+%% return state 1: max(single, station) = single, 0: max(single, station) = station
+varargout{1} = max(sim_single.power) > max(sim_station.power);
+end
