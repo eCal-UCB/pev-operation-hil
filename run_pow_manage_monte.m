@@ -1,10 +1,10 @@
-function varargout = run_pow_manage_monte(varargin)
+% function varargout = run_pow_manage_monte(varargin)
 
-if nargin == 0
+% if nargin == 0
     par = set_glob_par(init_params());
-elseif nargin == 1
-    par = set_glob_par(varargin{1});
-end
+% elseif nargin == 1
+%     par = set_glob_par(varargin{1});
+% end
 
 % if par.sim.isFixedEventSequence
 %     s = 'fixed';
@@ -15,7 +15,8 @@ end
 num_sim = par.monte.num_sims; % simulation numbers
 
 if par.sim.isFixedSeed
-    seed_list = linspace(1, num_sim, num_sim);
+%     seed_list = linspace(1, num_sim, num_sim);
+    seed_list = linspace(21,50,30);
 end
 
 failure_counter = 0;
@@ -43,4 +44,4 @@ while n <= num_sim
 end
 
 disp(['Out of ', num2str(num_sim), ' simulations, ', ...
-    num2str(failure_counter), ' failed at addressing peak power.'])
+    num2str(failure_counter), ' succeed in addressing peak power.'])
