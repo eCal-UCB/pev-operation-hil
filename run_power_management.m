@@ -146,10 +146,13 @@ sim_station.events = events;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
     i_k = i_k + 1;
+    no_event_counter = 1;
     % check visit
     if i_event <= length(events.time)
         if any(round(events.time/par.Ts)*par.Ts == k)
             inds_events_k = find(round(events.time/par.Ts)*par.Ts == k);
+            no_event_counter = 1; % reset counter
+            
             for j = 1:length(inds_events_k)
                 i_event = i_event + 1; % number of investigated events
                 if events.inp{inds_events_k(j)}.duration <= par.sim.endtime - k ...
@@ -166,7 +169,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        [station, opt] = run_opt_station(station, k);
                    end
                    sim_station.opts{i_event} = opt;
-                   station('D_init') = opt.peak_pow; % update demand charge
+%                    station('D_init') = opt.peak_pow; % update demand charge
                    
                    % driver makes choice
                    if par.sim.isFixedSeed
@@ -230,6 +233,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     end
                 end
             end
+        else
+            no_event_counter = no_event_counter + 1;
         end
     end
     
@@ -242,7 +247,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     % add actual power_ record to user
                     opt = station(ev{1});
-                    power = station(ev{1}).powers(1);
+                    power = station(ev{1}).powers(no_event_counter);
                     opt.power_traj_actual = [opt.power_traj_actual power];
                     station(ev{1}) = opt;
 %                     if length(station(ev{1}).powers) > 1
@@ -258,7 +263,12 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     else % flexible charging
                         sim_station.profit_charging_c(i_k) = sim_station.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     end
+                    
                     sim_station.power(i_k) = sim_station.power(i_k) + power;
+                    if station('D_init') < sim_station.power(i_k)
+                        % update demand charge
+                        station('D_init') = sim_station.power(i_k);
+                    end
                     
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim_station.occ.charging(i_k) = sim_station.occ.charging(i_k) + 1;

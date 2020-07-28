@@ -84,7 +84,7 @@ for j = 1:C
     for i = 1:size(existing_user_info,1)
         % iterate through new user + existing flex user
         N = existing_user_info(i,3); % get user N_flex, aka the remian duration
-        if j < N
+        if j <= N
             M_dc_L(2*(j-1)+1, (N+1)+j+(i-1)*var_dim_constant) = 1; % (N+1) skips the soc
         end
     end
