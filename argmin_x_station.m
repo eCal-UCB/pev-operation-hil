@@ -108,7 +108,7 @@ lb = [lb; station('D_init'); zeros(size(A_ineq,2)-length(lb)-1,1)];
 ub = [ub; station('D_init'); ones(size(A_ineq,2)-length(ub)-1,1)*station('pow_cap')];
 % solve optimization
 options = optimoptions('fmincon','Display','off','MaxFunEvals',30000);
-% options.Algorithm = 'sqp';
+options.Algorithm = 'sqp';
 
 % xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
 [xk,fval,exitflag,output,lambda,grad,hessian] = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);

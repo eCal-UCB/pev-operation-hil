@@ -53,18 +53,33 @@ station('pow_cap') = par.station.num_poles * 6.6 ; % this value is arbitrary for
 station('cost_dc') = 20; % this value is arbitrary for now
 sim.events = events;
 
+t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
+sim_station = init_sim(t); % simulation result
+station = containers.Map; % station monitor
+station('num_occupied_pole') = 0; 
+station('FLEX_list') = [];
+station('ASAP_list') = [];
+station('num_empty_pole') = par.station.num_poles;
+station('D_init') = 0;
+station('pow_cap') = par.station.num_poles * 6.6 ; % this value is arbitrary for now
+station('cost_dc') = 200; % this value is arbitrary for now
+sim_station.events = events;
+
 for k = par.sim.starttime:par.Ts:par.sim.endtime
     i_k = i_k + 1;
+    no_event_counter = 1;
     % check visit
     if i_event <= length(events.time)
         if any(round(events.time/par.Ts)*par.Ts == k)
             inds_events_k = find(round(events.time/par.Ts)*par.Ts == k);
+            no_event_counter = 1; % reset counter
+            
             for j = 1:length(inds_events_k)
                 i_event = i_event + 1; % number of investigated events
                 if events.inp{inds_events_k(j)}.duration <= par.sim.endtime - k ...
                         && station('num_empty_pole') > 0
-                   sim.tot_decision = sim.tot_decision + 1; % number of decisions
-                   sim.events.triggered(i_event) = true; % this event is triggered
+                   sim_station.tot_decision = sim_station.tot_decision + 1; % number of decisions
+                   sim_station.events.triggered(i_event) = true; % this event is triggered
                    
                    set_glob_prb(init_prb(events.inp{inds_events_k(j)}));
 
@@ -74,23 +89,23 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    else
                        [station, opt] = run_opt_station(station, k);
                    end
-                   sim.opts{i_event} = opt;
-                   station('D_init') = opt.peak_pow; % update demand charge
+                   sim_station.opts{i_event} = opt;
+%                    station('D_init') = opt.peak_pow; % update demand charge
                    
                    % driver makes choice
                    if par.sim.isFixedSeed
                        rng(1);
                    end
-                   rc = rand;
+                   rc = 0; % XXX always choose flex
                    if rc <= opt.prob.flex
                        opt.choice = 0; % charging with flexibility
                        opt.time.end = opt.time.end_flex;
                        opt.powers = opt.flex.powers; % TODO: need to adjust the power profile for existing users with right time index
                        opt.price = opt.tariff.flex;
                        if isempty(station('FLEX_list')) % record FLEX user
-                           station('FLEX_list') = {['EV' num2str(sim.tot_decision)]};
+                           station('FLEX_list') = {['EV' num2str(sim_station.tot_decision)]};
                        else
-                           station('FLEX_list') = [station('FLEX_list') {['EV' num2str(sim.tot_decision)]}];
+                           station('FLEX_list') = [station('FLEX_list') {['EV' num2str(sim_station.tot_decision)]}];
                        end
                    elseif rc <= opt.prob.flex + opt.prob.asap
                        opt.choice = 1; % charging as soon as possible
@@ -98,16 +113,16 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        opt.powers = opt.asap.powers;
                        opt.price = opt.tariff.asap;
                        if isempty(station('ASAP_list')) % record FLEX user
-                           station('ASAP_list') = {['EV' num2str(sim.tot_decision)]};
+                           station('ASAP_list') = {['EV' num2str(sim_station.tot_decision)]};
                        else
-                           station('ASAP_list') = [station('ASAP_list') {['EV' num2str(sim.tot_decision)]}];
+                           station('ASAP_list') = [station('ASAP_list') {['EV' num2str(sim_station.tot_decision)]}];
                        end
                    else
                        opt.choice = 2; % leaving without charging
                    end
-                   sim.choice_probs(i_event,:) = opt.v;
-                   sim.choice(i_event) = opt.choice;
-                   sim.control(i_event,:) = opt.z(1:3);
+                   sim_station.choice_probs(i_event,:) = opt.v;
+                   sim_station.choice(i_event) = opt.choice;
+                   sim_station.control(i_event,:) = opt.z(1:3);
                    if par.VIS_DETAIL
                     fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
                    end
@@ -116,18 +131,18 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    if opt.choice <= 1
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
                        try
-                           sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + duration;
+                           sim_station.overstay_duration(i_k) = sim_station.overstay_duration(i_k) + duration;
                            if duration == 32
                                disp('--- duration is boomed ----')
                            end
                        catch
                            a = 1;
                        end
-                       sim.num_service(i_k) = sim.num_service(i_k) + 1;
+                       sim_station.num_service(i_k) = sim_station.num_service(i_k) + 1;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
                        station('num_empty_pole') = station('num_empty_pole') - 1;
                        opt.power_traj_actual = [];
-                       station(['EV' num2str(sim.tot_decision)]) = opt;
+                       station(['EV' num2str(sim_station.tot_decision)]) = opt;
                    end 
                 else
                     if par.VIS_DETAIL
@@ -139,6 +154,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     end
                 end
             end
+        else
+            no_event_counter = no_event_counter + 1;
         end
     end
     
@@ -151,7 +168,8 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     % add actual power_ record to user
                     opt = station(ev{1});
-                    power = station(ev{1}).powers(1);
+                    power = station(ev{1}).powers(no_event_counter);
+%                     power = station(ev{1}).powers(1);
                     opt.power_traj_actual = [opt.power_traj_actual power];
                     station(ev{1}) = opt;
 %                     if length(station(ev{1}).powers) > 1
@@ -163,18 +181,23 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                         power = station(ev{1}).powers;
 %                     end
                     if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the uncontrol charging
-                        sim.profit_charging_uc(i_k) = sim.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                        sim_station.profit_charging_uc(i_k) = sim_station.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     else % flexible charging
-                        sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
+                        sim_station.profit_charging_c(i_k) = sim_station.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     end
-                    sim.power(i_k) = sim.power(i_k) + power;
+                    
+                    sim_station.power(i_k) = sim_station.power(i_k) + power;
+%                     if station('D_init') < sim_station.power(i_k)
+%                         % update demand charge
+%                         station('D_init') = sim_station.power(i_k);
+%                     end
                     
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
-                    sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
+                    sim_station.occ.charging(i_k) = sim_station.occ.charging(i_k) + 1;
                 else % is overstaying
                     if k <= station(ev{1}).time.leave 
-                        sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
-                        sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
+                        sim_station.profit_overstay(i_k) = sim_station.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
+                        sim_station.occ.overstay(i_k) = sim_station.occ.overstay(i_k) + 1;
 %                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
                     else
                         station.remove(ev{1});
@@ -196,10 +219,14 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     end
                 end
             elseif contains(ev{1},'occ')
-                sim.occ.total(i_k) = station('num_occupied_pole');
-                sim.occ.empty(i_k) = station('num_empty_pole');
+                sim_station.occ.total(i_k) = station('num_occupied_pole');
+                sim_station.occ.empty(i_k) = station('num_empty_pole');
             end
         end
+    end
+    if station('D_init') < sim_station.power(i_k)
+        % update demand charge
+        station('D_init') = sim_station.power(i_k);
     end
 end
 

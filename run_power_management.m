@@ -141,7 +141,7 @@ station('ASAP_list') = [];
 station('num_empty_pole') = par.station.num_poles;
 station('D_init') = 0;
 station('pow_cap') = par.station.num_poles * 6.6 ; % this value is arbitrary for now
-station('cost_dc') = 20; % this value is arbitrary for now
+station('cost_dc') = 200; % this value is arbitrary for now
 sim_station.events = events;
 
 for k = par.sim.starttime:par.Ts:par.sim.endtime
@@ -248,6 +248,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     % add actual power_ record to user
                     opt = station(ev{1});
                     power = station(ev{1}).powers(no_event_counter);
+%                     power = station(ev{1}).powers(1);
                     opt.power_traj_actual = [opt.power_traj_actual power];
                     station(ev{1}) = opt;
 %                     if length(station(ev{1}).powers) > 1
@@ -265,10 +266,10 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     end
                     
                     sim_station.power(i_k) = sim_station.power(i_k) + power;
-                    if station('D_init') < sim_station.power(i_k)
-                        % update demand charge
-                        station('D_init') = sim_station.power(i_k);
-                    end
+%                     if station('D_init') < sim_station.power(i_k)
+%                         % update demand charge
+%                         station('D_init') = sim_station.power(i_k);
+%                     end
                     
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim_station.occ.charging(i_k) = sim_station.occ.charging(i_k) + 1;
@@ -301,6 +302,10 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                 sim_station.occ.empty(i_k) = station('num_empty_pole');
             end
         end
+    end
+    if station('D_init') < sim_station.power(i_k)
+        % update demand charge
+        station('D_init') = sim_station.power(i_k);
     end
 end
 
@@ -402,5 +407,8 @@ if viz
 end
 
 %% return state 1: max(single, station) = single, 0: max(single, station) = station
+if max(sim_single.power) < max(sim_station.power)
+    stop = 1;
+end
 varargout{1} = max(sim_single.power) > max(sim_station.power);
 end

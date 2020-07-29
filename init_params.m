@@ -5,14 +5,14 @@ par.sens_analysis.num_poles = 2:2:16;
 % par.sens_analysis.num_poles = [2,3];
 
 % monte carlo
-par.monte.num_sims = 50;
+par.monte.num_sims = 100;
 
 % each one day simulation
 par.sim.starttime = 7;
 par.sim.endtime = 22;
 par.sim.isFixedEventSequence = false;
-par.sim.isFixedSeed = false;
-par.sim.num_events = 30;
+par.sim.isFixedSeed = true;
+par.sim.num_events = 50;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
 
 % baseline parameters
@@ -26,7 +26,7 @@ par.TOU = [0.217*ones(1,34) ...    % 0-8.5
            0.217*ones(1,96-86)];      % 22-24
 
 % charging station config
-par.station.num_poles = 15;                 % number of charging poles
+par.station.num_poles = 8;                 % number of charging poles
 par.eff = 0.92;                             % power efficiency
 
 % dcm params

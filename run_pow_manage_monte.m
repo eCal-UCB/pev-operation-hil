@@ -15,15 +15,15 @@
 num_sim = par.monte.num_sims; % simulation numbers
 
 if par.sim.isFixedSeed
-%     seed_list = linspace(1, num_sim, num_sim);
-    seed_list = linspace(21,50,30);
+    seed_list = linspace(1, num_sim, num_sim);
+%     seed_list = linspace(21,50,30);
 end
 
 failure_counter = 0;
 n = 1;
 
 while n <= num_sim
-    
+     
     try
         if par.sim.isFixedSeed
             seed_val = seed_list(n);
