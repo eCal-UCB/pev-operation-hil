@@ -48,10 +48,10 @@ while n <= num_sim
         else
             events = gen_events_one_day(par);
         end
-%         disp('Optimize single charger...');
-%         sim_results{n} = run_sim_one_day(par,events);
+        disp('Optimize single charger...');
+        sim_results{n} = run_sim_one_day(par,events);
         disp('Optimize station...');
-        sim_results{n} = run_sim_one_day_v2(par,events);
+        sim_results_v2{n} = run_sim_one_day_v2(par,events);
         disp('Run baseline...');
         sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
         fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
@@ -68,7 +68,7 @@ if nargout == 1
     varargout = {};
     arg = {};
     arg.optimal = sim_results;
-%     arg.optimal_v2 = sim_results_v2;
+    arg.optimal_v2 = sim_results_v2;
     arg.baseline = sim_results_base;
     varargout{1} = arg;
 end

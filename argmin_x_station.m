@@ -6,7 +6,8 @@ prb = get_glob_prb();
 N = prb.N_flex;
 
 if (v < 0) | (sum(v) < 1-par.soft_v_eta) | (sum(v) > 1+par.soft_v_eta)
-    error('[ ERROR] invalid $v$');
+%     error('[ ERROR] invalid $v$');
+    warning('[ Warning] invalid $v$');
 end
 
 % cost function

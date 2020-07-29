@@ -42,18 +42,6 @@ end
 
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
-sim = init_sim(t); % simulation result
-station = containers.Map; % station monitor
-station('num_occupied_pole') = 0; 
-station('FLEX_list') = [];
-station('ASAP_list') = [];
-station('num_empty_pole') = par.station.num_poles;
-station('D_init') = 0;
-station('pow_cap') = par.station.num_poles * 6.6 ; % this value is arbitrary for now
-station('cost_dc') = 20; % this value is arbitrary for now
-sim.events = events;
-
-t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
 sim_station = init_sim(t); % simulation result
 station = containers.Map; % station monitor
 station('num_occupied_pole') = 0; 
@@ -96,7 +84,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    if par.sim.isFixedSeed
                        rng(1);
                    end
-                   rc = 0; % XXX always choose flex
+                   rc = rand;
                    if rc <= opt.prob.flex
                        opt.choice = 0; % charging with flexibility
                        opt.time.end = opt.time.end_flex;
@@ -132,9 +120,6 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
                        try
                            sim_station.overstay_duration(i_k) = sim_station.overstay_duration(i_k) + duration;
-                           if duration == 32
-                               disp('--- duration is boomed ----')
-                           end
                        catch
                            a = 1;
                        end
