@@ -1,5 +1,5 @@
 function vis_sim_monte(varargin)
-close all;
+% close all;
 % visualizes monte carlo simulation results
 
 if nargin == 0
@@ -47,7 +47,7 @@ if num_sim_base >= 1 % if there is a baseline
         overstay_mean_base(n) = mean(sim_results_base{n}.overstay_duration(sim_results_base{n}.overstay_duration~=0));
         overstay_penalty_mean_base(n) = mean(sim_results_base{n}.control(sim_results_base{n}.control(:,3)~=0,3));
         overstay_tot_base(n) = sum(sim_results_base{n}.overstay_duration);
-        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay)- max(sim_results{n}.power) * 18.86 / 30;
+        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay)- max(sim_results_base{n}.power) * 18.86 / 30;
         service_tot_base(n) = sum(sim_results_base{n}.num_service);
     end
 end

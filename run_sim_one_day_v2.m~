@@ -156,7 +156,11 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     opt = station(ev{1});
 %                     power = station(ev{1}).powers(no_event_counter);
                     try
-                        dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
+                        if opt.choice == 0
+                            dur = k:par.Ts:opt.time.end-par.Ts;
+                        else
+                            
+                        end
                         power = interp1(dur,opt.powers(1:length(dur)),k);
                     catch
                         a = 1;
@@ -222,16 +226,16 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     end
 end
 
-sim_station.par = par;
+sim.par = par;
 
 varargout = {};
-varargout{1} = sim_station;
+varargout{1} = sim;
 
 %% Visualization
 if nargout == 0
     options = vis_sim_one_day(); % options: display, temporals, choices
     options.temporals = true;
-    vis_sim_one_day(sim_station,options);
+    vis_sim_one_day(sim,options);
 end
 
 end

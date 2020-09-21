@@ -12,17 +12,22 @@ J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par
 %% Run algorithm -- block coordinate descent
 itermax = 1e4;
 count = 0; improve = inf;
-zk = ones(4,1);                         % [z_c, z_uc, y, 1];
+zk = [0 0 0 1]';                         % [z_c, z_uc, y, 1];
 xk = ones(2*prb.N_flex+1,1);            % [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1+#of FLEX
-vk = 1/3*ones(3,1);                     % [sm_c, sm_uc, sm_y];
+vk = [0.45 0.45 0.1]';                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
 while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     count = count + 1;
-    try
-        Jk(count) = J(zk,xk,vk);    
-    catch
-        error('ERROR')
-    end
+    
+    z = zk;
+    x = xk;
+    v = vk;
+    Jk(count) = J(zk,xk,vk);
+%     try
+%             
+%     catch
+%         error('ERROR')
+%     end
     
     
     % update init variables
@@ -41,20 +46,20 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
 %     end
 end
 
-opt.z = zk;
-opt.tariff.flex = zk(1);
-opt.tariff.asap = zk(2);
-opt.tariff.overstay = zk(3);
-opt.x = xk;
+opt.z = z;
+opt.tariff.flex = z(1);
+opt.tariff.asap = z(2);
+opt.tariff.overstay = z(3);
+opt.x = x;
 % update demand charge
-opt.peak_pow = max(xk(prb.N_flex+2:end));
-opt.flex.SOCs = xk(1:prb.N_flex+1);
-opt.flex.powers = xk(prb.N_flex+2:end);
-opt.asap.powers = prb.station.pow_max;
-opt.v = vk;
-opt.prob.flex = vk(1);
-opt.prob.asap = vk(2);
-opt.prob.leave = vk(3);
+opt.peak_pow = max(x(prb.N_flex+2:end));
+opt.flex.SOCs = x(1:prb.N_flex+1);
+opt.flex.powers = x(prb.N_flex+2:end);
+opt.asap.powers = ones(prb.N_asap,1)*prb.station.pow_max;
+opt.v = v;
+opt.prob.flex = v(1);
+opt.prob.asap = v(2);
+opt.prob.leave = v(3);
 opt.J = Jk(1:count);
 opt.num_iter = count;
 opt.prb = prb;

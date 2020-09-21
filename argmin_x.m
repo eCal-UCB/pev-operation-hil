@@ -26,8 +26,8 @@ lb2 = prb.station.pow_min.*ones(N,1);
 lb = [lb1;lb2];
 
 % upper bound - power max
-ub1 = ones(N+1,1); 
-ub2 = prb.station.pow_max.*ones(N,1);
+ub1 = ones(N+1,1); % soc
+ub2 = prb.station.pow_max.*ones(N,1); % power
 ub = [ub1;ub2];
 
 % equality constraints - system dynamics
@@ -40,11 +40,13 @@ C2R = -diag(par.eff*par.Ts/prb.user.batt_cap*ones(1,N));
 d1 = prb.user.SOC_init; 
 d2 = zeros(N,1);
 
-Aeq = [C1L C1R; C2L C2R];
+Aeq = [C1L C1R; % initial soc
+       C2L C2R]; % system dynamics
 beq = [d1; d2];
 
 % solve optimization
-options = optimoptions('fmincon','Display','off','Algorithm','sqp');
+options = optimoptions('fmincon','Display','off');
+% options.Algorithm = 'sqp';
 xk = fmincon(J,prb.x0,A,b,Aeq,beq,lb,ub,[],options);
 if xk(1) > xk(2)
     a = 1;

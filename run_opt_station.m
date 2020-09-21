@@ -36,22 +36,24 @@ existing_user_info = [start_time, -1, prb.N_flex, 1, new_user.SOC_need, new_user
 
 num_col_xk = max(existing_user_info(:, 3)); % set optimization time window, T_end^FLEX
 var_dim_constant = 2*num_col_xk+1;
-xk = ones(var_dim_constant*(num_flex_user+2), 1); % [soc0_newuser .. socN_newuser u0_newuser .. uN_1_newuser; ...;  soc0_extuser .. socN_extsuser u0_extuser .. uN_1_extuser]; 
+xk = ones(var_dim_constant*(num_flex_user+1), 1); % [soc0_newuser .. socN_newuser u0_newuser .. uN_1_newuser; ...;  soc0_extuser .. socN_extsuser u0_extuser .. uN_1_extuser]; 
                                                   % - dimention
                                                   % var_dim_constant x
                                                   % (1+num_flex_user) --->
                                                   % reshape to one column
                                                   % (2+num_flex_user) for
                                                   % demand charge
-
+% xk = ones(2*prb.N_flex+1,1);            % [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1+#of FLEX
+                                                  
 itermax = 1e4;
 count = 0; improve = inf;
-zk = ones(4,1);                         % [z_c, z_uc, y, 1];
+zk = [0 0 0 1]';                         % [z_c, z_uc, y, 1];
 vk = [0.45 0.45 0.1]';                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
 while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     count = count + 1;
 %     Jk(count) = J(zk,xk,vk);
+    z=zk;x=xk;v=vk;
     Jk(count) = constr_J(par,prb,zk,xk,vk,station,k,existing_user_info,var_dim_constant);
     
     % update init variables
@@ -85,12 +87,19 @@ end
 % add field of SOC in user
 
 % update flex user profile
+zk=z;xk=x;vk=v;
 for i = 1:length(user_keys)
     user = station(user_keys{i});
     end_time = user.time.end/par.Ts;  
     N_remain = end_time-k/par.Ts;
+%     user.time.start = k; % update start time 
     user.x = xk((i)*var_dim_constant+1:(i+1)*var_dim_constant);
-    user.powers = xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant);
+    try
+        user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant)];
+    catch
+        % do nothing
+        a=1;
+    end
     user.SOC = xk((i)*var_dim_constant+1:i*var_dim_constant+N_remain+1);
     station(user_keys{i}) = user;
 end
@@ -101,10 +110,10 @@ opt.tariff.flex = zk(1);
 opt.tariff.asap = zk(2);
 opt.tariff.overstay = zk(3);
 opt.x = xk; % for all flex user/vehicle
-opt.peak_pow = xk(end);
+opt.peak_pow = max(xk(num_col_xk+2:var_dim_constant));
 opt.flex.SOCs = xk(1:prb.N_flex+1); % record new user flex
 opt.flex.powers = xk(num_col_xk+2:var_dim_constant); % record new user asap
-opt.asap.powers = prb.station.pow_max;
+opt.asap.powers = ones(prb.N_asap,1)*prb.station.pow_max;
 opt.v = vk;
 opt.prob.flex = vk(1);
 opt.prob.asap = vk(2);
