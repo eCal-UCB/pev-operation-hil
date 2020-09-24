@@ -12,9 +12,12 @@ fname = fullfile(pwd,'sensitivity-sim-results', ...
                 datestr(now,'mm_dd_yy_HH_MM')));
 monte_results = cell(length(par.sens_analysis.num_poles),1);
 i=0;
-for num_pole = par.sens_analysis.num_poles
-    i = i + 1;
-    save(fname);
+% parfor num_pole = par.sens_analysis.num_poles
+parfor i = 1:length(par.sens_analysis.num_poles)
+%     i = i + 1;
+%     save(fname);
+    par = init_params();
+    num_pole = par.sens_analysis.num_poles(i);
     fprintf('\n[%s SENSITIVITY] ** start monte carlo simulation with %d poles ** \n\n',datetime('now'),num_pole);
     par.station.num_poles = num_pole;
     monte_results{i} = run_sim_monte(par); % {num_pole} -> optimal/baseline -> {num_sim}
