@@ -116,17 +116,28 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     if ~isempty(keys)
         for ev = keys
             if contains(ev{1},'EV')
-                if  k <= station(ev{1}).time.end % is charging duration
+                if  k < station(ev{1}).time.end % is charging duration
+%                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
+%                     if length(station(ev{1}).powers) > 1
+%                         power = interp1(linspace(station(ev{1}).time.start, ...
+%                                             station(ev{1}).time.end,...
+%                                             length(station(ev{1}).powers)), ...
+%                                             station(ev{1}).powers, k);
+%                     elseif length(station(ev{1}).powers) == 1
+%                         power = station(ev{1}).powers;
+%                     end
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
-                    if length(station(ev{1}).powers) > 1
-                        power = interp1(linspace(station(ev{1}).time.start, ...
-                                            station(ev{1}).time.end,...
-                                            length(station(ev{1}).powers)), ...
-                                            station(ev{1}).powers, k);
-                    elseif length(station(ev{1}).powers) == 1
-                        power = station(ev{1}).powers;
+                    % add actual power record to user
+                    opt = station(ev{1});
+%                     power = station(ev{1}).powers(no_event_counter);
+                    dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
+                    if length(dur) > 1 && length(opt.powers) > 1
+                        power = interp1(dur,opt.powers(1:length(dur)),k);
+                    else
+                        power = opt.powers(1);
                     end
-                    if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the  uncontrol charging
+%                     if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the  uncontrol charging
+                    if opt.choice == 1 % asap charging
                         sim.profit_charging_uc(i_k) = sim.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     else % flexible charging
                         sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);

@@ -119,11 +119,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
                        [opt.time.leave, duration] = get_rand_os_duration(opt);
-                       try
-                           sim_station.overstay_duration(i_k) = sim_station.overstay_duration(i_k) + duration;
-                       catch
-                           a = 1;
-                       end
+                       sim_station.overstay_duration(i_k) = sim_station.overstay_duration(i_k) + duration;
                        sim_station.num_service(i_k) = sim_station.num_service(i_k) + 1;
                        station('num_occupied_pole') = station('num_occupied_pole') + 1;
                        station('num_empty_pole') = station('num_empty_pole') - 1;
@@ -154,29 +150,15 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
                     % add actual power record to user
                     opt = station(ev{1});
-%                     power = station(ev{1}).powers(no_event_counter);
-                    try
-                        dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
-                        if length(dur) > 1 && length(opt.powers) > 1
-                            power = interp1(dur,opt.powers(1:length(dur)),k);
-                        else
-                            power = opt.powers(1);
-                        end
-                        
-                    catch
-                        a = 1;
+                    dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
+                    if length(dur) > 1 && length(opt.powers) > 1
+                        power = interp1(dur,opt.powers,k);
+                    else
+                        power = opt.powers(1);
                     end
-%                     power = station(ev{1}).powers(1);
                     opt.power_traj_actual = [opt.power_traj_actual power];
                     station(ev{1}) = opt;
-%                     if length(station(ev{1}).powers) > 1
-%                         power = interp1(linspace(station(ev{1}).time.start, ...
-%                                             station(ev{1}).time.end,...
-%                                             length(station(ev{1}).powers)), ...
-%                                             station(ev{1}).powers, k);
-%                     elseif length(station(ev{1}).powers) == 1
-%                         power = station(ev{1}).powers;
-%                     end
+                    
                     if opt.choice == 1 % asap
                         sim_station.profit_charging_uc(i_k) = sim_station.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     else % flexible charging

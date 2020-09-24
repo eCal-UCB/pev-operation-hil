@@ -3,7 +3,7 @@ par = get_glob_par();
 prb = get_glob_prb();
 
 if (v < 0) | (sum(v) < 1-par.soft_v_eta) | (sum(v) > 1+par.soft_v_eta)
-    error('[ ERROR] invalid $v$');
+    warning('[ ERROR] invalid $v$');
 end
 
 % LSE function

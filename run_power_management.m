@@ -398,6 +398,7 @@ end
 %% Visualize
 viz = false;
 if viz
+    i=1;sim_station = sim_results_v2{i};sim_single=sim_results{i};sim_base=sim_results_base{i};
     plot(sim_station.t, sim_station.power, 'linewidth',1.5); hold on;
     plot(sim_single.t, sim_single.power, 'linewidth',1.5);   
     plot(sim_base.t, sim_base.power, 'linewidth',1.5); 

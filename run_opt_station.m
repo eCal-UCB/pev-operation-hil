@@ -87,6 +87,7 @@ end
 % add field of SOC in user
 
 % update flex user profile
+N_max = (var_dim_constant-1)/2;
 zk=z;xk=x;vk=v;
 for i = 1:length(user_keys)
     user = station(user_keys{i});
@@ -95,7 +96,8 @@ for i = 1:length(user_keys)
 %     user.time.start = k; % update start time 
     user.x = xk((i)*var_dim_constant+1:(i+1)*var_dim_constant);
     try
-        user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant)];
+%         user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant)];
+        user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_max+2:(i)*var_dim_constant+N_max+2+N_remain-1)];
     catch
         % do nothing
         a=1;
@@ -104,15 +106,16 @@ for i = 1:length(user_keys)
     station(user_keys{i}) = user;
 end
 
-
 opt.z = zk;
 opt.tariff.flex = zk(1);
 opt.tariff.asap = zk(2);
 opt.tariff.overstay = zk(3);
 opt.x = xk; % for all flex user/vehicle
-opt.peak_pow = max(xk(num_col_xk+2:var_dim_constant));
+% opt.peak_pow = max(xk(num_col_xk+2:var_dim_constant));
+opt.peak_pow = max(xk(N_max+2:N_max+2+prb.N_flex-1));
 opt.flex.SOCs = xk(1:prb.N_flex+1); % record new user flex
-opt.flex.powers = xk(num_col_xk+2:var_dim_constant); % record new user asap
+% opt.flex.powers = xk(num_col_xk+2:var_dim_constant); % record new user asap
+opt.flex.powers = xk(N_max+2:N_max+2+prb.N_flex-1); % record new user asap
 opt.asap.powers = ones(prb.N_asap,1)*prb.station.pow_max;
 opt.v = vk;
 opt.prob.flex = vk(1);
