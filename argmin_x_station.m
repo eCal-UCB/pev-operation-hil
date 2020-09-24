@@ -86,7 +86,7 @@ function J = constr_J(x)
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
 %         existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration-1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
@@ -122,7 +122,7 @@ function J = constr_J(x)
 %     new_flex_obj = sum((x(prb.N_flex+2:2*prb.N_flex+1).*(prb.TOU(1:prb.N_flex) - z(1)))...
 %                     +par.lambda.z_c*z(1)^2)...
 %                   +par.lambda.h_c * 1/z(3); % with convergence regularization
-    new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex+1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+    new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex-1).*(prb.TOU(1:prb.N_flex) - z(1)))...
                     +par.lambda.z_c*z(1)^2)...
                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 

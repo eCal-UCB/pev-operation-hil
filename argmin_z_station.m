@@ -39,6 +39,7 @@ options = optimoptions('fmincon','Display','off');
 zk = fmincon(J,prb.z0,A,b,Aeq,beq,lb,ub,[],options);
 
 function J = constr_J(z)
+    N_max = (var_dim_constant-1)/2;
 % par, prb, z, x, v
 % station - container.maps object 
 % k = global time index
@@ -50,7 +51,8 @@ function J = constr_J(z)
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
+%         existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration-1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
@@ -63,7 +65,6 @@ function J = constr_J(z)
     end
     
     %%% planned asap power profile %%%
-    N_max = (var_dim_constant-1)/2;
     asap_power_sum_profile = zeros(1,var_dim_constant);
     it = 0;
     for t = k : k + (N_max-1)*par.Ts
@@ -77,12 +78,13 @@ function J = constr_J(z)
     end
     
     % part 1: case 1 - charging-FLEX
-    new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
-                        +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1))...
-                    +par.lambda.z_c*z(1)^2)...
-                  +par.lambda.h_c * 1/z(3); % with convergence regularization
+%     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex-1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+%                     +par.lambda.z_c*z(1)^2))...
+%                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 
-              
+    new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex-1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+                        +par.lambda.z_c*z(1)^2)...
+                      +par.lambda.h_c * 1/z(3); % with convergence regularization              
               
 %     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
 %                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1)))...
