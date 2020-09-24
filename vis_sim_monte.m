@@ -64,7 +64,7 @@ fprintf('[%s SIM] visualizing...\n',datetime('now')); tic;
 figure('position',[1,1,640,704]); num_bins = 10; 
 vals_to_vis = {'overstay_mean','profit','service_tot'};
 baselines = {'overstay_mean_base', 'profit_base', 'service_tot_base'};
-xlabels = {'mean overstay duration (hour)','net profit ($)','service provide (#)'};
+xlabels = {'mean overstay duration [hr]','net profit [$]','service provide [#]'};
 ylabels = {'probability [0,1]'};
 num_subplot = length(vals_to_vis);
 for i = 1:num_subplot
@@ -83,7 +83,7 @@ for i = 1:num_subplot
     text(mean(vals),max(h1.BinCounts/sum(h1.BinCounts))+0.04, ...
         sprintf(' mean: %.1f (%+.2f%%)',mean(vals),(mean(vals)/mean(baseline)-1)*100),...
         'fontsize',15);
-    grid on; xlabel(xlabels{i}); ylabel('probability [0,1]');
+    grid on; xlabel(xlabels{i}); ylabel('probability $\in$ [0,1]','interpreter','latex');
     set(gca,'fontsize',15);
     if i == 1
         legend([s1 s2],{'mean w/ control','mean w/o control'},'location','northwest');
@@ -104,11 +104,11 @@ vis_sim_one_day(sim_results{day});
 % mean overstay penalty vs. profits
 figure; 
 subplot(121);scatter(overstay_penalty_mean,profit,'filled'); grid on; set(gca,'fontsize',15);
-xlabel('mean overstay penalty ($)'); ylabel('profit ($)');
+xlabel('mean overstay penalty [$]'); ylabel('profit [$]');
 
 % mean overstay penalty vs. mean overstay duration
 subplot(122);scatter(overstay_penalty_mean,overstay_mean,'filled'); grid on; set(gca,'fontsize',15);
-xlabel('mean overstay penalty ($)'); ylabel('mean overstay duration (hour)');
+xlabel('mean overstay penalty [$]'); ylabel('mean overstay duration [hr]');
 sgtitle([{'Pareto Chart'},{sprintf('(total number of simulations: %d)',length(sim_results))}],'fontsize',18);
 saveas(gcf,'recent-visualization/pareto.png');
 saveas(gcf,'recent-visualization/pareto.fig');

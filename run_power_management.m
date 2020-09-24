@@ -398,11 +398,12 @@ end
 %% Visualize
 viz = false;
 if viz
-    plot(sim_single.t, sim_single.power, 'linewidth',1.5); hold on; 
-    plot(sim_station.t, sim_station.power, 'linewidth',1.5); 
-    plot(sim_base.t, sim_base.power, 'linewidth',1.5); hold off; 
+    plot(sim_station.t, sim_station.power, 'linewidth',1.5); hold on;
+    plot(sim_single.t, sim_single.power, 'linewidth',1.5);   
+    plot(sim_base.t, sim_base.power, 'linewidth',1.5); 
+    plot(sim_station.t, 50*ones(1,length(sim_station.t)), '--', 'linewidth',1.5);hold off; 
     set(gca, 'fontsize',15); grid on; 
-    legend('Single','Station','Baseline'); 
+    legend('Station','Single','Baseline','capacity'); 
     xlabel('Time of the day [hr]'); ylabel('Power [kW]');
 end
 

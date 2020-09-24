@@ -30,19 +30,20 @@ for idx = 1:size(existing_user_info,1)
    SOC_init = existing_user_info(idx,6);
    SOC_need = min(SOC_need, SOC_feas_max+SOC_init);
    
-   % ==========================
-   % inequality constraint 
-   % ==========================
+   % ======================================================================
+   % inequality constraint -- charging requirements, power bounds
+   % ======================================================================
+   % SOC requirement
    A_ineq_user = [zeros(1,N) -1 zeros(1,var_dim_constant-N-1)];
    A_ineq = blkdiag(A_ineq, A_ineq_user);
    b_ineq(idx) = -SOC_need; % SOC_need
    
-   % lower bound - power min
-   lb1 = [zeros(N,1); SOC_need; zeros(N_max-N,1)];
+   % lower bound - energy/power min
+   lb1 = [zeros(N,1); SOC_need; zeros(N_max-N,1)]; % <NOTE> this is redundant with inequality constraint
    lb2 = [prb.station.pow_min.*ones(N,1); zeros(N_max-N,1)];
    lb((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [lb1;lb2]; %1:soc, 2:power
    
-   % upper bound - power max
+   % upper bound - energy/power max
    ub1 = [ones(N,1); 1; zeros(N_max-N,1)]; 
    ub2 = [prb.station.pow_max.*ones(N,1); zeros(N_max-N,1)];
    ub((idx-1)*var_dim_constant+1:idx*var_dim_constant,1) = [ub1;ub2];
@@ -67,11 +68,12 @@ end
 
 % solve optimization
 options = optimoptions('fmincon','Display','off');
-options.Algorithm = 'sqp';
+% options.Algorithm = 'sqp';
 
 xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
 
 function J = constr_J(x)
+    N_max = (var_dim_constant-1)/2;
 % par, prb, z, x, v
 % station - container.maps object 
 % k = global time index
@@ -83,7 +85,8 @@ function J = constr_J(x)
         duration = existing_user_info(i,3); TOU_idx = existing_user_info(i,4);
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
+%         existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+duration+2:adj_constant+2*duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration+1,1).*(user.prb.TOU(TOU_idx:end) - user.price)) - overstay_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
@@ -96,7 +99,6 @@ function J = constr_J(x)
     end
     
     %%% planned asap power profile %%%
-    N_max = (var_dim_constant-1)/2;
     asap_power_sum_profile = zeros(1,var_dim_constant);
     it = 0;
     for t = k : k + (N_max-1)*par.Ts
@@ -117,7 +119,10 @@ function J = constr_J(x)
 %                     +par.lambda.z_c*z(1)^2)...
 %                   +par.lambda.h_c * 1/z(3); % with convergence regularization
               
-    new_flex_obj = sum((x(prb.N_flex+2:2*prb.N_flex+1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+%     new_flex_obj = sum((x(prb.N_flex+2:2*prb.N_flex+1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+%                     +par.lambda.z_c*z(1)^2)...
+%                   +par.lambda.h_c * 1/z(3); % with convergence regularization
+    new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex+1).*(prb.TOU(1:prb.N_flex) - z(1)))...
                     +par.lambda.z_c*z(1)^2)...
                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 

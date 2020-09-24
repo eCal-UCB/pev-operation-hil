@@ -42,8 +42,9 @@ if options.display
 %         legend('instant-charging-uc', 'instant-charging-c', 'instant-overstay', ...
 %             'net-charging-uc', 'net-charging-c', 'net-overstay')
         plot(sim.t,sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay,'linewidth',1.5); hold on;
-        tot_profit = cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay) ...
-                     - max(sim.power)*18.86/30;
+%         tot_profit = cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay) ...
+%                      - max(sim.power)*18.86/30;
+        tot_profit = cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay);
         plot(sim.t,tot_profit,'linewidth',1.5); 
         hold off; xlim([sim.t(1) sim.t(end)]);
         grid on; xlabel('hour of the day'); ylabel('profit ($)');
@@ -102,7 +103,7 @@ if options.display
         text(1.5,sum(choice_probs(1,1:3))-0.04,'leaving without charging','fontsize',15,'color','white');
         
         h = scatter(1:length(choices), choice_labels,'k','filled'); hold off;
-        text(1:length(choice_probs), choice_labels+0.01, choice_times_str_filtered, 'fontsize',13);
+%         text(1:length(choice_probs), choice_labels+0.01, choice_times_str_filtered, 'fontsize',13);
         
         xlabel('event#'); ylabel('probability [0,1]'); 
         title([{'Choice Probabilities and Decisions '},...
@@ -113,7 +114,8 @@ if options.display
                         sum(choices==2)...
                         )}]);
         xlim([1,length(choice_probs)]); ylim([0,1]);
-        legend(h,{'choice (hours)'})
+%         legend(h,{'choice (hours)'})
+        legend(h,{'choice'})
         set(gca,'fontsize',15);
         %%
         saveas(gcf,'recent-visualization/one_day_choice.png');

@@ -157,7 +157,12 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                     power = station(ev{1}).powers(no_event_counter);
                     try
                         dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
-                        power = interp1(dur,opt.powers(1:length(dur)),k);
+                        if length(dur) > 1 && length(opt.powers) > 1
+                            power = interp1(dur,opt.powers(1:length(dur)),k);
+                        else
+                            power = opt.powers(1);
+                        end
+                        
                     catch
                         a = 1;
                     end

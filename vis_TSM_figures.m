@@ -46,7 +46,7 @@ legend('station','single','capacity');
 
 %% 2. Temporal electricity price changes (station-wide vs baseline)
 load('monte-sim-results/06_26_20_18_21_monte_eps200_rand_seq_poles8.mat'); % this will overwrite workspace
-day = 1;
+day = 2;
 
 N = length(sim_results_v2{day}.opts);
 event_times = [];
@@ -69,18 +69,21 @@ figure;
 colororder({'b','m'})
 
 yyaxis left
-p1 = plot(event_times, flex_prices, 'linewidth', 1.5); hold on;
 p2 = plot(event_times, asap_prices, 'linewidth', 1.5);
-p4 = plot(event_times, overstay_prices, 'linewidth', 1.5); hold off;
-ylabel('price ($)');
+hold on;
+p1 = plot(event_times, flex_prices, 'linewidth', 1.5); 
+p3 = plot(event_times, TOU, 'linewidth', 1.5); 
+hold off;
+ylabel('price ($/kW)');
 
 yyaxis right
-p3 = plot(event_times, TOU, 'linewidth', 1.5); hold off;
+p4 = plot(event_times, overstay_prices, 'linewidth', 1.5); 
+hold off;
 set(gca, 'fontsize', 15); grid on;
 title('Charging Price');
 xlabel('hour of the day');
-ylabel('price ($)');
-legend('flex','asap','overstay','TOU');
+ylabel('penalty cost ($/hr)');
+legend('asap','flex','TOU','overstay');
 
 
 %% 3. Stated duration vs energy requested vs overstay penalty
