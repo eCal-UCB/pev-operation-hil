@@ -41,7 +41,7 @@ while n <= num_sim
     fprintf('======================== %d/%d =======================\n',...
         n,num_sim);
     t1= tic;
-%     try
+    try
         if par.sim.isFixedSeed
             seed_val = seed_list(n);
             events = gen_events_one_day(par, seed_val);
@@ -56,9 +56,9 @@ while n <= num_sim
         sim_results_base{n} = run_sim_one_day_baseline(sim_results{n});
         fprintf('\n[%s SIM] one day operation DONE (%.2f sec)\n\n\n',datetime('now'),toc(t1));
         n = n + 1;
-%     catch
-%         warning(sprintf('Constraint violated. Regenerate count %d',n)); %#ok<SPWRN>
-%     end
+    catch
+        warning(sprintf('Constraint violated. Regenerate count %d',n)); %#ok<SPWRN>
+    end
 end
 tot_time = toc(t0);
 fprintf('[%s SIM] DONE monte carlo simulation, %.2f sec\n',datetime('now'), tot_time);

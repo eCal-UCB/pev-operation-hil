@@ -132,7 +132,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                     power = station(ev{1}).powers(no_event_counter);
                     dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
                     if length(dur) > 1 && length(opt.powers) > 1
-                        power = interp1(dur,opt.powers(1:length(dur)),k);
+                        power = interp1(dur,opt.powers,k);
                     else
                         power = opt.powers(1);
                     end
@@ -146,7 +146,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying
-                    if k <= station(ev{1}).time.leave 
+                    if k < station(ev{1}).time.leave 
                         sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
 %                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;

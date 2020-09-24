@@ -33,7 +33,12 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
         for i = 1:length(station('ASAP_list'))
             opt = station(user_keys{1,i});
             if k <= opt.time.end
-                asap_power_sum_profile(it) = asap_power_sum_profile(it) + interp1(opt.time.start:par.Ts:opt.time.end-par.Ts,opt.powers,k);
+                if length(opt.powers) > 1
+                    pow = interp1(opt.time.start:par.Ts:opt.time.end-par.Ts,opt.powers,k);
+                else
+                    pow = opt.powers;
+                end
+                asap_power_sum_profile(it) = asap_power_sum_profile(it) + pow;
             end
         end
     end

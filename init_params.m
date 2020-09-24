@@ -1,11 +1,11 @@
 function par = init_params(varargin)
 
 % sensitivity analysis
-par.sens_analysis.num_poles = 2:2:16;
+par.sens_analysis.num_poles = 2:3:17;
 % par.sens_analysis.num_poles = [2,3];
 
 % monte carlo
-par.monte.num_sims = 1;
+par.monte.num_sims = 30;
 
 % each one day simulation
 par.sim.starttime = 7;
@@ -52,7 +52,7 @@ par.opt.eps = 1e-4;
 
 
 % debug mode
-par.VIS_DETAIL = true;
+par.VIS_DETAIL = false;
 end
 
 

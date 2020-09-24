@@ -97,6 +97,7 @@ saveas(gcf,'recent-visualization/hist','epsc');
 % (2) one day simulation results
 % visualize temporal trajectories and choices
 day = randi(length(sim_results));
+% day = 3;
 vis_sim_one_day(sim_results{day});
 
 
