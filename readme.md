@@ -2,6 +2,9 @@
 Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Loop. The simulator implements the online controller that finds optimal charging and pricing policy. 
 
 ## Workflow
+![demo](demo/decision_flow.png#style=centerme)
+<center>Fig. 1. PEV charging station work flow: the decision process when a user plug-in a PEV</center>
+
 Fig.  1  illustrates  the  charger  operation  for  a  single  PEV driver (denoted as “user”). Upon arrival to the PEV charging station, the user inputs the following information: 
 - intended parking duration
 - desired added range in miles.
@@ -12,9 +15,6 @@ In sequence, the user receives the pricing for two charging service options in \
 - leave: the driver leaves the station without charging. 
 
 If a charger is vacant and the user decides for either charging  service (charging-flexibility or charging-asap), then  the charger will be occupied for the entire parking duration. When the user departs, the user pays the service fee (including overstay fees if applicable). The charger then becomes available to others. If the user decides to leave withoutcharging (leave), the charger remains open to others.
-
-![demo](demo/decision_flow.png#style=centerme)
-<center>Fig. 1. PEV charging station work flow: the decision process when a user plug-in a PEV</center>
 
 ## Controller 
 There are two strategies of optimization: (i) single-charger optimization \[1] and (ii) station-wide optimization \[2]. The single-charger optimization strategy only considers one charger (which the user is currently occupying) in optimal charging schedule. The station-wide optimization strategy considers all chargers (which the previous users are currently occupying) in optimal charging schedule. 
