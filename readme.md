@@ -6,16 +6,15 @@ Fig.  1  illustrates  the  charger  operation  for  a  single  PEV driver (denot
 - intended parking duration
 - desired added range in miles.
 
-In  sequence,  the  user  receives  the  pricing  for  two  chargingservice options in \[$/kW], and an overstay penalty in \[$/hour](bottom  box  in  Fig.  1).  These  prices  are  computed  by  the pricing policy controller. Given the prices, the user chooses one of the following three options:
-- charging-flexibility (controlled charging, time flexibility granted by customer): The needed energy is guaranteedto  be  delivered  upon  departure.  However,  the  stationoperator may optimize the charging schedule.
-- charging-asap (uncontrolled  charging,  no  time  flexi-bility  permitted):  The  PEV  is  charged  at  max  power continuously,  starting  immediately,  until  the  vehicle departs or the battery is full.
+In sequence, the user receives the pricing for two charging service options in \[$/kW], and an overstay penalty in \[$/hour] (bottom box in Fig. 1). These prices are computed by the pricing policy controller. Given the prices, the user chooses one of the following three options:
+- charging-flexibility (controlled charging, time flexibility granted by customer): The needed energy is guaranteed to be delivered upon departure. However, the station operator may optimize the charging schedule.
+- charging-asap (uncontrolled charging, no time flexibility permitted): The PEV is charged at the max power continuously, starting immediately, until the vehicle departs or the battery is full.
 - leave: the driver leaves the station without charging. 
 
 If a charger is vacant and the user decides for either charging  service (charging-flexibility or charging-asap), then  the charger will be occupied for the entire parking duration. When the user departs, the user pays the service fee (including overstay fees if applicable). The charger then becomes available to others. If the user decides to leave withoutcharging (leave), the charger remains open to others.
 
-![demo](demo/decision_flow.png)
-
-Fig. 1.
+![demo](demo/decision_flow.png#style=centerme)
+<center>Fig. 1. PEV charging station work flow: the decision process when a user plug-in a PEV</center>
 
 ## Controller 
 There are two strategies of optimization: (i) single-charger optimization \[1] and (ii) station-wide optimization \[2]. The single-charger optimization strategy only considers one charger (which the user is currently occupying) in optimal charging schedule. The station-wide optimization strategy considers all chargers (which the previous users are currently occupying) in optimal charging schedule. 
