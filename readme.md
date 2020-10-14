@@ -55,7 +55,7 @@ run setup
 ## References
 \[1] S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
 
-\[1] T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
+\[2] T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
 ```
 @inproceedings{bae2020inducing,
   title={Inducing Human Behavior to Alleviate Overstay at PEV Charging Station},
