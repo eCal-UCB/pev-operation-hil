@@ -5,12 +5,16 @@ Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Lo
 Fig.  1  illustrates  the  charger  operation  for  a  single  PEV driver (denoted as “user”). Upon arrival to the PEV charging station, the user inputs the following information: 
 - intended parking duration
 - desired added range in miles.
+
 In  sequence,  the  user  receives  the  pricing  for  two  chargingservice options in \[$/kW], and an overstay penalty in \[$/hour](bottom  box  in  Fig.  1).  These  prices  are  computed  by  the pricing policy controller. Given the prices, the user chooses one of the following three options:
 - charging-flexibility (controlled charging, time flexibility granted by customer): The needed energy is guaranteedto  be  delivered  upon  departure.  However,  the  stationoperator may optimize the charging schedule.
 - charging-asap (uncontrolled  charging,  no  time  flexi-bility  permitted):  The  PEV  is  charged  at  max  power continuously,  starting  immediately,  until  the  vehicle departs or the battery is full.
 - leave: the driver leaves the station without charging. 
+
 If a charger is vacant and the user decides for either charging  service (charging-flexibility or charging-asap), then  the charger will be occupied for the entire parking duration. When the user departs, the user pays the service fee (including overstay fees if applicable). The charger then becomes available to others. If the user decides to leave withoutcharging (leave), the charger remains open to others.
+
 ![demo](demo/decision_flow.png)
+
 Fig. 1.
 
 ## Controller 
