@@ -1,7 +1,7 @@
 # PEV-OPERATION-HIL
 Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Loop. The simulator implements the online controller that finds optimal charging and pricing policy. 
 
-![demo](demo/decision_flow.pdf)
+![demo](demo/decision_flow.png)
 
 * S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
 
