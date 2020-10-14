@@ -1,10 +1,11 @@
 # PEV-OPERATION-HIL
-Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Loop. The simulator implements online controller that finds optimal charging and pricing policy. 
+Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Loop. The simulator implements the online controller that finds optimal charging and pricing policy. 
 
-![demo](demo/demo.gif)
+![demo](demo/decision_flow.pdf)
 
-S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, [preprint](https://arxiv.org/pdf/1912.02341.pdf).
-T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_. \*equal
+* S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
+
+* T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
 ```
 @inproceedings{bae2020inducing,
   title={Inducing Human Behavior to Alleviate Overstay at PEV Charging Station},
@@ -41,8 +42,8 @@ run setup
     - ```argmin_x``` : update xk in BCD algorithm
     - ```argmin_v``` : update vk in BCD algorithm
     - ```init_prb``` : initialize prb structure that stores event specific parameteres 
-    - ```init_par``` : initialize par structure that stores constant (hyper) parameters -- configuration here
+    - ```init_par``` : initialize par structure that stores constant (hyper) parameters -- **configuration** in this file
     - ```vis_sim_monte.m``` : visualize a result of monte carlo simulations results. Run this file to open a file brower and select a .mat file in /monte-sim-results 
     - ```vis_sim_one_day.m``` : visualize a simulation result of one day operation
     - ```vis_sim_one_event.m``` : visualize a simulation result of one control event
-    - ```*_station.m``` : for station-wide optimization
+    - ```*_station.m``` : extension with ```_station``` indicates the station-wide optimization
