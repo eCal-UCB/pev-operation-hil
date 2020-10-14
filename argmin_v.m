@@ -26,5 +26,6 @@ Aeq = [-ones(1,3);ones(1,3)]; beq = [-(1-par.soft_v_eta);1+par.soft_v_eta];
      
 % solve optimization
 options = optimoptions('fmincon','Display','off');
+% options.Algorithm = 'sqp';
 vk = fmincon(J,prb.v0,[A;Aeq],[b;beq],[],[],lb,ub,[],options);
 end

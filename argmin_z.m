@@ -31,5 +31,6 @@ Aeq = [0 0 0 1]; beq = 1;
 
 % solve optimization
 options = optimoptions('fmincon','Display','off');
+% options.Algorithm = 'sqp';
 zk = fmincon(J,prb.z0,A,b,Aeq,beq,lb,ub,[],options);
 end

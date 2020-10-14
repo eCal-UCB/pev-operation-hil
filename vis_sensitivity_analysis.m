@@ -9,9 +9,9 @@ end
 
 %% Data process
 num_monte = length(monte_results);
-par = monte_results{1}.optimal{1}.par;
+par = monte_results{1}.optimal_v2{1}.par;
 num_sims = par.monte.num_sims;
-len_overstay_duration = length(monte_results{1}.optimal{1}.overstay_duration);
+len_overstay_duration = length(monte_results{1}.optimal_v2{1}.overstay_duration);
 
 num_poles = par.sens_analysis.num_poles;
 mean_profit_charging_uc_gap = zeros(num_monte,1);
@@ -24,6 +24,8 @@ profit_charging_c_sum = zeros(num_monte,1);
 profit_charging_uc_sum_base = zeros(num_monte,1);
 profit_overstay_sum = zeros(num_monte,1);
 profit_overstay_sum_base = zeros(num_monte,1);
+cost_demand_charge = zeros(num_monte,1);
+cost_demand_charge_base = zeros(num_monte,1);
 %
 mean_overstay_gap = zeros(num_monte,1);
 box_overstay_gap = zeros(num_sims, num_monte);
@@ -38,7 +40,7 @@ plot_service_tot_min_base = zeros(num_monte,1);
 box_service_tot = zeros(num_sims, num_monte);
 box_service_tot_base = zeros(num_sims, num_monte);
 for i = 1:num_monte
-    sim_results = monte_results{i}.optimal;
+    sim_results = monte_results{i}.optimal_v2; %%%%%%%%%%% TEMP: set to optimal_v2 for station wide optimization results
     sim_results_base = monte_results{i}.baseline;
     
     num_sims = sim_results{1}.par.monte.num_sims;
@@ -52,6 +54,7 @@ for i = 1:num_monte
     profit_charging_c = zeros(num_sims,1);
     profit_overstay = zeros(num_sims,1);
     service_tot = zeros(num_sims,1);
+    pow_max = zeros(num_sims,1);
     for n = 1:num_sims
         if ~isempty(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0))
             overstay_mean(n) = mean(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0));
@@ -65,6 +68,7 @@ for i = 1:num_monte
         profit_overstay(n) = sum(sim_results{n}.profit_overstay);
         profit_tot(n) = profit_charging_uc(n) + profit_charging_c(n) + profit_overstay(n);
         service_tot(n) = sum(sim_results{n}.num_service);
+        pow_max(n) = max(sim_results{n}.power);
     end
 
     % without controller
@@ -76,6 +80,7 @@ for i = 1:num_monte
     profit_charging_c_base = zeros(num_sims,1);
     profit_overstay_base = zeros(num_sims,1);
     service_tot_base = zeros(num_sims,1);
+    pow_max_base = zeros(num_sims,1);
     for n = 1:num_sims
         overstay_mean_base(n) = mean(sim_results_base{n}.overstay_duration(sim_results_base{n}.overstay_duration~=0));
         overstay_penalty_mean_base(n) = mean(sim_results_base{n}.control(sim_results_base{n}.control(:,3)~=0,3));
@@ -85,6 +90,7 @@ for i = 1:num_monte
         profit_overstay_base(n) = sum(sim_results_base{n}.profit_overstay);
         profit_tot_base(n) = profit_charging_uc_base(n) + profit_charging_c_base(n) + profit_overstay_base(n);
         service_tot_base(n) = sum(sim_results_base{n}.num_service);
+        pow_max_base(n) = max(sim_results_base{n}.power);
     end
     
     % compute the improvements
@@ -99,6 +105,8 @@ for i = 1:num_monte
     profit_charging_uc_sum_base(i) = sum(profit_charging_uc_base);
     profit_overstay_sum(i) = sum(profit_overstay);
     profit_overstay_sum_base(i) = sum(profit_overstay_base);
+    cost_demand_charge(i) = 18.86*max(pow_max);
+    cost_demand_charge_base(i) = 18.86*max(pow_max_base);
     %
     mean_overstay_gap(i) = (mean(overstay_mean(~isnan(overstay_mean)))/mean(overstay_mean_base)-1)*100;
     plot_service_tot(i) = mean(service_tot)/par.sim.num_events;
@@ -184,24 +192,31 @@ set(gca, 'fontsize' , 15);
 legend('W/ incentive','W/o incentive','location','nw'); 
 
 %% visualize profit by charging option/overstay
-figure;
+figure(9);
 subplot(121);
-bar(num_poles, [profit_charging_uc_sum/num_monte, profit_charging_c_sum/num_monte, profit_overstay_sum/num_monte]);
+num_sim_in_monte = length(sim_results);
+b=bar(num_poles, [profit_charging_c_sum, profit_charging_uc_sum, profit_overstay_sum]/num_sim_in_monte);
 % xlabel('Number of poles');
-ylabel('Profit [$]');
-title('Average Profit Distributions [with Incentive Control]');
+ylabel('Profit ($)');
+title({'Average Profit Distributions','[with Incentive Control]'});
 xlabel('Number of poles');
 legend('Charging-Flex','Charging-ASAP','Overstay');
 % ylim([0, 200]);
-set(gca,'fontsize',15); grid on; 
+set(gca,'fontsize',20); grid on;  
+ylim([0 max(max([profit_charging_uc_sum, profit_charging_c_sum, profit_overstay_sum]/num_sim_in_monte))+10]);
 
 subplot(122);
-bar(num_poles, [profit_charging_uc_sum_base/num_monte, profit_overstay_sum_base/num_monte]);
+hb=bar(num_poles, [profit_charging_uc_sum_base, profit_overstay_sum_base]/num_sim_in_monte);
+hb(1).FaceColor = [0.8500 0.3250 0.0980];
+hb(2).FaceColor = [0.9290 0.6940 0.1250];
+ylim([0 max(max([profit_charging_uc_sum, profit_charging_c_sum, profit_overstay_sum]/num_sim_in_monte))+10]);
+
 xlabel('Number of poles');
 % ylabel('Profit [$]');
-title('Average Profit Distributions [without Incentive Control]');
+title({'Average Profit Distributions','[without Incentive Control]'});
 xlabel('Number of poles');
 legend('Charging','Overstay')
-% ylim([0, 200]);
-set(gca,'fontsize',15); grid on; 
+% ylim([0, max()]);
+set(gca,'fontsize',20); grid on; 
+%
 end

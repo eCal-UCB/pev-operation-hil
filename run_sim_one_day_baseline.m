@@ -1,7 +1,9 @@
 function sim = run_sim_one_day_baseline(sim_c)
 % input: a one-day simulation result with controller
-fprintf('[%s SIM] start running simulation with baseline (without controller)\n',datetime('now'));
 events = sim_c.events; par = sim_c.par;
+if par.VIS_DETAIL
+    fprintf('[%s SIM] start running simulation with baseline (without controller)\n',datetime('now'));
+end
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
 sim = init_sim(t); % simulation result
 station = containers.Map; % station monitor
@@ -38,10 +40,12 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    station('num_empty_pole') = station('num_empty_pole') - 1;
                    station(['EV' num2str(sim.tot_decision)]) = opt;
                 else
-                    if station('num_empty_pole') == 0
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
-                    else
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                    if par.VIS_DETAIL
+                        if station('num_empty_pole') == 0
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
+                        else
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                        end
                     end
                 end
             end

@@ -24,12 +24,18 @@ elseif nargin == 1
 end
 
 % dcm params
-asc_flex    = 2 + 0.05 * prb.user.duration; 
-asc_asap    = 2.5;
+% asc_flex    = 2 + 0.2 * prb.user.duration; 
+% asc_asap    = 2.5;
+asc_flex    = 2 + 0.401*prb.user.duration - 1.8531*prb.user.SOC_init; %5.0583
+asc_asap    = 1 + 0.865*prb.user.duration - 1.8531*prb.user.SOC_init; %3.7088
 asc_leaving = 0;
-prb.dcm.charging_flex.params = [-1 1 0 asc_flex]';          % DCM parameters for choice 1 -- charging with flexibility 
-prb.dcm.charging_asap.params = [1 -1 0 asc_asap]';          % DCM parameters for choice 2 -- charging as soon as possible
-prb.dcm.leaving.params       = [-0.01 -0.01 0.01 asc_leaving]';           % DCM parameters for choice 3 -- leaving without charging
+energy_need = prb.user.SOC_need * prb.user.batt_cap;
+% prb.dcm.charging_flex.params = [-1 0 0 asc_flex]';          % DCM parameters for choice 1 -- charging with flexibility 
+% prb.dcm.charging_asap.params = [0 -1 0 asc_asap]';          % DCM parameters for choice 2 -- charging as soon as possible
+prb.dcm.charging_flex.params = [-0.1881*energy_need 0 0 asc_flex]';          % DCM parameters for choice 1 -- charging with flexibility 
+prb.dcm.charging_asap.params = [0 -0.1835*energy_need 0 asc_asap]';          % DCM parameters for choice 2 -- charging as soon as possible
+
+prb.dcm.leaving.params       = [-0.01 -0.01 0.005 asc_leaving]';           % DCM parameters for choice 3 -- leaving without charging
 prb.THETA = [prb.dcm.charging_flex.params';
              prb.dcm.charging_asap.params';
              prb.dcm.leaving.params'];

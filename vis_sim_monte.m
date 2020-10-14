@@ -1,5 +1,5 @@
 function vis_sim_monte(varargin)
-close all;
+% close all;
 % visualizes monte carlo simulation results
 
 if nargin == 0
@@ -32,7 +32,7 @@ for n = 1:num_sim
     overstay_mean(n) = mean(sim_results{n}.overstay_duration(sim_results{n}.overstay_duration~=0));
     overstay_penalty_mean(n) = mean(sim_results{n}.control(sim_results{n}.control(:,3)~=0,3));
     overstay_tot(n) = sum(sim_results{n}.overstay_duration);
-    profit(n) = sum(sim_results{n}.profit_charging_uc+sim_results{n}.profit_charging_c+sim_results{n}.profit_overstay);
+    profit(n) = sum(sim_results{n}.profit_charging_uc+sim_results{n}.profit_charging_c+sim_results{n}.profit_overstay) - max(sim_results{n}.power) * 18.86 / 30;
     service_tot(n) = sum(sim_results{n}.num_service);
 end
 
@@ -47,7 +47,7 @@ if num_sim_base >= 1 % if there is a baseline
         overstay_mean_base(n) = mean(sim_results_base{n}.overstay_duration(sim_results_base{n}.overstay_duration~=0));
         overstay_penalty_mean_base(n) = mean(sim_results_base{n}.control(sim_results_base{n}.control(:,3)~=0,3));
         overstay_tot_base(n) = sum(sim_results_base{n}.overstay_duration);
-        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay);
+        profit_base(n) = sum(sim_results_base{n}.profit_charging_uc+sim_results_base{n}.profit_charging_c+sim_results_base{n}.profit_overstay)- max(sim_results_base{n}.power) * 18.86 / 30;
         service_tot_base(n) = sum(sim_results_base{n}.num_service);
     end
 end
@@ -64,7 +64,7 @@ fprintf('[%s SIM] visualizing...\n',datetime('now')); tic;
 figure('position',[1,1,640,704]); num_bins = 10; 
 vals_to_vis = {'overstay_mean','profit','service_tot'};
 baselines = {'overstay_mean_base', 'profit_base', 'service_tot_base'};
-xlabels = {'mean overstay duration (hour)','net profit ($)','service provide (#)'};
+xlabels = {'mean overstay duration [hr]','net profit [$]','service provide [#]'};
 ylabels = {'probability [0,1]'};
 num_subplot = length(vals_to_vis);
 for i = 1:num_subplot
@@ -83,7 +83,7 @@ for i = 1:num_subplot
     text(mean(vals),max(h1.BinCounts/sum(h1.BinCounts))+0.04, ...
         sprintf(' mean: %.1f (%+.2f%%)',mean(vals),(mean(vals)/mean(baseline)-1)*100),...
         'fontsize',15);
-    grid on; xlabel(xlabels{i}); ylabel('probability [0,1]');
+    grid on; xlabel(xlabels{i}); ylabel('probability $\in$ [0,1]','interpreter','latex');
     set(gca,'fontsize',15);
     if i == 1
         legend([s1 s2],{'mean w/ control','mean w/o control'},'location','northwest');
@@ -97,6 +97,7 @@ saveas(gcf,'recent-visualization/hist','epsc');
 % (2) one day simulation results
 % visualize temporal trajectories and choices
 day = randi(length(sim_results));
+% day = 3;
 vis_sim_one_day(sim_results{day});
 
 
@@ -104,11 +105,11 @@ vis_sim_one_day(sim_results{day});
 % mean overstay penalty vs. profits
 figure; 
 subplot(121);scatter(overstay_penalty_mean,profit,'filled'); grid on; set(gca,'fontsize',15);
-xlabel('mean overstay penalty ($)'); ylabel('profit ($)');
+xlabel('mean overstay penalty [$]'); ylabel('profit [$]');
 
 % mean overstay penalty vs. mean overstay duration
 subplot(122);scatter(overstay_penalty_mean,overstay_mean,'filled'); grid on; set(gca,'fontsize',15);
-xlabel('mean overstay penalty ($)'); ylabel('mean overstay duration (hour)');
+xlabel('mean overstay penalty [$]'); ylabel('mean overstay duration [hr]');
 sgtitle([{'Pareto Chart'},{sprintf('(total number of simulations: %d)',length(sim_results))}],'fontsize',18);
 saveas(gcf,'recent-visualization/pareto.png');
 saveas(gcf,'recent-visualization/pareto.fig');

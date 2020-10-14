@@ -8,6 +8,9 @@ if nargin == 0
     par = get_glob_par();
 elseif nargin == 1
     par = varargin{1};
+elseif nargin == 2
+    par = varargin{1};
+    seed_val = varargin{2};
 else
     fprintf('[%s ERROR] invalid number of inputs',datetime('now'));
 end
@@ -18,6 +21,9 @@ if par.sim.isFixedEventSequence % with one fixed sequence of events
     num_events = height(act_data);
     event_idx = 1:num_events;
 else % with multi random sequences of events
+%     if par.sim.isFixedSeed
+%         rng(seed_val);
+%     end
     num_events = par.sim.num_events; % by default. 
     act_data = readtable('real_act_data.csv');
     event_idx = sort(randi([1 height(act_data)], 1, num_events));
@@ -37,6 +43,7 @@ for i = 1:num_events
     event.SOC_init = act_data{n, 3};
     event.SOC_need = act_data{n, 4}; % add infeasible scenario
     event.batt_cap = act_data{n, 5};
+%     event.batt_cap = 21.3; % temporary battery capacity
     event.duration = act_data{n, 6}; % hours
     event.overstay_duration = act_data{n, 7};
     event.pow_max = act_data{n, 8};

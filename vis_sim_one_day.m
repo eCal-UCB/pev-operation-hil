@@ -42,7 +42,10 @@ if options.display
 %         legend('instant-charging-uc', 'instant-charging-c', 'instant-overstay', ...
 %             'net-charging-uc', 'net-charging-c', 'net-overstay')
         plot(sim.t,sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay,'linewidth',1.5); hold on;
-        plot(sim.t,cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay),'linewidth',1.5); 
+%         tot_profit = cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay) ...
+%                      - max(sim.power)*18.86/30;
+        tot_profit = cumsum(sim.profit_charging_uc+sim.profit_charging_c+sim.profit_overstay);
+        plot(sim.t,tot_profit,'linewidth',1.5); 
         hold off; xlim([sim.t(1) sim.t(end)]);
         grid on; xlabel('hour of the day'); ylabel('profit ($)');
         legend('Instant','Net');
@@ -100,7 +103,7 @@ if options.display
         text(1.5,sum(choice_probs(1,1:3))-0.04,'leaving without charging','fontsize',15,'color','white');
         
         h = scatter(1:length(choices), choice_labels,'k','filled'); hold off;
-        text(1:length(choice_probs), choice_labels+0.01, choice_times_str_filtered, 'fontsize',13);
+%         text(1:length(choice_probs), choice_labels+0.01, choice_times_str_filtered, 'fontsize',13);
         
         xlabel('event#'); ylabel('probability [0,1]'); 
         title([{'Choice Probabilities and Decisions '},...
@@ -111,12 +114,56 @@ if options.display
                         sum(choices==2)...
                         )}]);
         xlim([1,length(choice_probs)]); ylim([0,1]);
-        legend(h,{'choice (hours)'})
+%         legend(h,{'choice (hours)'})
+        legend(h,{'choice'})
         set(gca,'fontsize',15);
         %%
         saveas(gcf,'recent-visualization/one_day_choice.png');
         saveas(gcf,'recent-visualization/one_day_choice.fig');
         saveas(gcf,'recent-visualization/one_day_choice','epsc');
+        
+        %% sub figure for choice
+        figure;
+        choices = sim.choice(~isnan(sim.choice));
+        choice_probs = sim.choice_probs(~isnan(sim.choice_probs(:,1)),:);
+        choice_labels = zeros(length(choices),1);
+        choice_times = sim.events.time(logical(sim.events.triggered));
+        choice_times_str = num2str(round(choice_times*100)/100);
+        choice_times_str_filtered = cell(length(choice_labels),1);
+        for i = 1:length(choice_labels)
+            choice_times_str_filtered{i} = ['(' strtrim(choice_times_str(i,:)) ')'];
+        end
+        
+        for j = 1:length(choice_labels)
+            choice_labels(j) = (choices(j)==0)*1/2*choice_probs(j,1) ...
+                               + (choices(j)==1)*(choice_probs(j,1)+1/2*choice_probs(j,2))...
+                               + (choices(j)==2)*(choice_probs(j,1)+choice_probs(j,2)+1/2*choice_probs(j,3));
+        end
+        subplot(211);
+        ha = area(1:length(choice_probs), choice_probs); hold on;
+%         text(1.5,choice_probs(1,1)-0.04,'charging flex','fontsize',15,'color','white');
+        text(1.5,0.04,'charging flex','fontsize',15,'color','white');
+        text(1.5,sum(choice_probs(1,1:2))-0.04,'charging asap','fontsize',15,'color','white');
+        text(1.5,sum(choice_probs(1,1:3))-0.04,'leaving without charging','fontsize',15,'color','white');
+        ylabel('probability [0,1]'); 
+        title([{'Choice Probabilities and Decisions '},...
+               {sprintf('(total: %d, flex: %d, asap: %d, leave: %d)',...
+                        length(choices),...
+                        sum(choices==0),...
+                        sum(choices==1),...
+                        sum(choices==2)...
+                        )}]);
+        xlim([1,length(choice_probs)]); ylim([0,1]);
+        set(gca,'fontsize',15);
+%         fliplegend({'charging-FLEX','charging-ASAP','leaving'});
+        legend(fliplr(ha),'leaving','charging-ASAP','charging-FLEX');
+        
+        subplot(212);
+        h=scatter(1:length(choices), choices,'k','filled');
+        names = {'charging-FLEX'; 'charging-ASAP'; 'leaving'};
+        set(gca,'ytick',[0:2],'yticklabel',names,'fontsize',15); grid on;
+        legend(h,{'choice'})
+        xlabel('event#'); 
     end
 end
 end

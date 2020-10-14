@@ -22,7 +22,7 @@ function varargout = run_sim_one_day(varargin)
 % clear
 
 %% Initialization
-fprintf('[%s INIT] initializing...\n',datetime('now'));
+% fprintf('[%s INIT] initializing...\n',datetime('now'));
 if nargin == 0
     par = set_glob_par(init_params());
     events = gen_events_one_day(par);
@@ -36,7 +36,9 @@ else
     error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
 end
 
-fprintf('[%s INIT] DONE\n',datetime('now'));
+if par.VIS_DETAIL
+    fprintf('[%s INIT] INITIALIZATION DONE\n',datetime('now'));
+end
 
 %% Simulation
 t = par.sim.starttime:par.Ts:par.sim.endtime; i_k = 0; i_event = 0;
@@ -83,7 +85,9 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                    sim.choice_probs(i_event,:) = opt.v;
                    sim.choice(i_event) = opt.choice;
                    sim.control(i_event,:) = opt.z(1:3);
-                   fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+                   if par.VIS_DETAIL
+                    fprintf('[%s EVENT] time = %.2f, CHOICE = %s\n',datetime('now'),k,par.dcm.choices{opt.choice+1});
+                   end
 
                    % if the driver chooses to charge EV
                    if opt.choice <= 1
@@ -95,10 +99,12 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                        station(['EV' num2str(sim.tot_decision)]) = opt;
                    end 
                 else
-                    if station('num_empty_pole') == 0
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
-                    else
-                        fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                    if par.VIS_DETAIL
+                        if station('num_empty_pole') == 0
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to full occupancy\n',datetime('now'),i_event);
+                        else
+                            fprintf('[%s EVENT] SKIPPED (event %d) due to violating operationg hours\n',datetime('now'),i_event);
+                        end
                     end
                 end
             end
@@ -110,17 +116,28 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
     if ~isempty(keys)
         for ev = keys
             if contains(ev{1},'EV')
-                if  k <= station(ev{1}).time.end % is charging duration
+                if  k < station(ev{1}).time.end % is charging duration
+%                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
+%                     if length(station(ev{1}).powers) > 1
+%                         power = interp1(linspace(station(ev{1}).time.start, ...
+%                                             station(ev{1}).time.end,...
+%                                             length(station(ev{1}).powers)), ...
+%                                             station(ev{1}).powers, k);
+%                     elseif length(station(ev{1}).powers) == 1
+%                         power = station(ev{1}).powers;
+%                     end
                     TOU = interp1(0:0.25:24-0.25,par.TOU,k,'nearest');
-                    if length(station(ev{1}).powers) > 1
-                        power = interp1(linspace(station(ev{1}).time.start, ...
-                                            station(ev{1}).time.end,...
-                                            length(station(ev{1}).powers)), ...
-                                            station(ev{1}).powers, k);
-                    elseif length(station(ev{1}).powers) == 1
-                        power = station(ev{1}).powers;
+                    % add actual power record to user
+                    opt = station(ev{1});
+%                     power = station(ev{1}).powers(no_event_counter);
+                    dur = opt.time.start:par.Ts:opt.time.end-par.Ts;
+                    if length(dur) > 1 && length(opt.powers) > 1
+                        power = interp1(dur,opt.powers,k);
+                    else
+                        power = opt.powers(1);
                     end
-                    if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the  uncontrol charging
+%                     if power == opt.prb.station.pow_max % hyperthetically when power is max power it's the  uncontrol charging
+                    if opt.choice == 1 % asap charging
                         sim.profit_charging_uc(i_k) = sim.profit_charging_uc(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     else % flexible charging
                         sim.profit_charging_c(i_k) = sim.profit_charging_c(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
@@ -129,7 +146,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
 %                     sim.profit_charging(i_k) = sim.profit_charging(i_k) + par.Ts * power * (station(ev{1}).price - TOU);
                     sim.occ.charging(i_k) = sim.occ.charging(i_k) + 1;
                 else % is overstaying
-                    if k <= station(ev{1}).time.leave 
+                    if k < station(ev{1}).time.leave 
                         sim.profit_overstay(i_k) = sim.profit_overstay(i_k) + par.Ts * station(ev{1}).tariff.overstay;
                         sim.occ.overstay(i_k) = sim.occ.overstay(i_k) + 1;
 %                         sim.overstay_duration(i_k) = sim.overstay_duration(i_k) + par.Ts;
