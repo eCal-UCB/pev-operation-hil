@@ -1,27 +1,24 @@
 # PEV-OPERATION-HIL
 Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Loop. The simulator implements the online controller that finds optimal charging and pricing policy. 
 
+## Workflow
+Fig.  1  illustrates  the  charger  operation  for  a  single  PEV driver (denoted as “user”). Upon arrival to the PEV charging station, the user inputs the following information: 
+- intended parking duration
+- desired added range in miles.
+In  sequence,  the  user  receives  the  pricing  for  two  chargingservice options in \[$/kW], and an overstay penalty in \[$/hour](bottom  box  in  Fig.  1).  These  prices  are  computed  by  the pricing policy controller. Given the prices, the user chooses one of the following three options:
+- charging-flexibility (controlled charging, time flexibility granted by customer): The needed energy is guaranteedto  be  delivered  upon  departure.  However,  the  stationoperator may optimize the charging schedule.
+- charging-asap (uncontrolled  charging,  no  time  flexi-bility  permitted):  The  PEV  is  charged  at  max  power continuously,  starting  immediately,  until  the  vehicle departs or the battery is full.
+- leave: the driver leaves the station without charging. 
+If a charger is vacant and the user decides for either charging  service (charging-flexibility or charging-asap), then  the charger will be occupied for the entire parking duration. When the user departs, the user pays the service fee (including overstay fees if applicable). The charger then becomes available to others. If the user decides to leave withoutcharging (leave), the charger remains open to others.
 ![demo](demo/decision_flow.png)
+Fig. 1.
 
-* S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
-
-* T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
-```
-@inproceedings{bae2020inducing,
-  title={Inducing Human Behavior to Alleviate Overstay at PEV Charging Station},
-  author={Bae, Sangjae and Zeng, Teng and Travacca, Bertrand and Moura, Scott},
-  booktitle={2020 American Control Conference (ACC)},
-  pages={2388--2394},
-  year={2020},
-  organization={IEEE}
-}
-```
-
+## Controller 
+There are two strategies of optimization: (i) single-charger optimization \[1] and (ii) station-wide optimization \[2]. The single-charger optimization strategy only considers one charger (which the user is currently occupying) in optimal charging schedule. The station-wide optimization strategy considers all chargers (which the previous users are currently occupying) in optimal charging schedule. 
 
 ## Prerequisites
 - Matlab R2014a or higher
 - Parallel Computing Toolbox (for sensitivity analysis)
-
 
 ## Setup
 In the Matlab command window
@@ -49,3 +46,23 @@ run setup
     - ```vis_sim_one_day.m``` : visualize a simulation result of one day operation
     - ```vis_sim_one_event.m``` : visualize a simulation result of one control event
     - ```*_station.m``` : extension with ```_station``` indicates the station-wide optimization
+
+
+## References
+\[1] S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
+
+\[1] T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
+```
+@inproceedings{bae2020inducing,
+  title={Inducing Human Behavior to Alleviate Overstay at PEV Charging Station},
+  author={Bae, Sangjae and Zeng, Teng and Travacca, Bertrand and Moura, Scott},
+  booktitle={2020 American Control Conference (ACC)},
+  pages={2388--2394},
+  year={2020},
+  organization={IEEE}
+}
+```
+
+## Contact
+* Sangjae Bae: sangjae.bae@berkeley.edu
+* Teng Zeng: hustlejanton@berkeley.edu
