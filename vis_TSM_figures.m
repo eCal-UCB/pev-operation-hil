@@ -45,7 +45,8 @@ legend('station','single','capacity');
 
 
 %% 2. Temporal electricity price changes (station-wide vs baseline)
-load('monte-sim-results/06_26_20_18_21_monte_eps200_rand_seq_poles8.mat'); % this will overwrite workspace
+% load('monte-sim-results/06_26_20_18_21_monte_eps200_rand_seq_poles8.mat'); % this will overwrite workspace
+% 09_21_20_16_35_monte_eps50_rand_seq_poles8.mat % -- September 28, 2020
 day = 2;
 
 N = length(sim_results_v2{day}.opts);
@@ -65,7 +66,7 @@ for i = 1 : N
     end
 end
 
-figure;
+figure(1);
 colororder({'b','m'})
 
 yyaxis left
@@ -74,7 +75,7 @@ hold on;
 p1 = plot(event_times, flex_prices, 'linewidth', 1.5); 
 p3 = plot(event_times, TOU, 'linewidth', 1.5); 
 hold off;
-ylabel('price ($/kW)');
+ylabel('price ($/kWh)');
 
 yyaxis right
 p4 = plot(event_times, overstay_prices, 'linewidth', 1.5); 
@@ -85,9 +86,27 @@ xlabel('hour of the day');
 ylabel('penalty cost ($/hr)');
 legend('asap','flex','TOU','overstay');
 
+xlim([7.5, 20]);
+
 
 %% 3. Stated duration vs energy requested vs overstay penalty
 load('monte-sim-results/06_26_20_18_21_monte_eps200_rand_seq_poles8.mat'); % this will overwrite workspace
+
+% for sensitivity analysis results
+% num_sensitivity = length(monte_results);
+% num_monte = length(monte_results{1}.optimal_v2);
+% % sim_results = cell(num_sensitivity*num_monte,1);
+% % for i = 1 : num_sensitivity
+% %     for j = 1 : num_monte
+% %         sim_results{(i-1)*num_monte + j} = monte_results{i}.optimal_v2{j};
+% %     end
+% % end
+% 
+% sim_results = cell(num_monte,1);
+% i = 6;
+% for j = 1 : num_monte
+%     sim_results{j} = monte_results{i}.optimal_v2{j};
+% end
 
 durations = [];
 energy_requested = [];
@@ -113,3 +132,8 @@ set(gca,'fontsize',15);
 xlabel('energy requested (kWh)');
 ylabel('stated duration (hr)');
 legend('overstay penalty ($/hr)');
+% 
+% figure(2); scatter3(energy_requested,durations,overstay_penalty);
+% xlabel('energy requested (kWh)');
+% ylabel('stated duration (hr)');
+% zlabel('overstay penalty ($/hr)');
