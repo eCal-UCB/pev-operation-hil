@@ -3,10 +3,10 @@ Plug-in Electric Vehicle Charging Station Operation Simulator -- Human-In-the-Lo
 
 ## Workflow
 
-![demo](demo/decision_flow.png#style=centerme)
-<center><h6><em>Fig. 1. PEV charging station work flow: the decision process when a user plug-in a PEV</em></h6></center>
+![demo](demo/decision_flow.png#style=centerme) 
+<center><h5><em>Fig. 1. PEV charging station work flow: the decision process when a user plug-in a PEV</em></h5></center>
 
-Fig.  1  illustrates  the  charger  operation  for  a  single  PEV driver (denoted as “user”). Upon arrival to the PEV charging station, the user inputs the following information: 
+Fig. 1 illustrates the charger operation for a single PEV driver (denoted as “user”). Upon arrival to the PEV charging station, the user inputs the following information: 
 - intended parking duration
 - desired added range in miles.
 
