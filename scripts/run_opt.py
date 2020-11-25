@@ -8,14 +8,14 @@ import sys
 def run_opt():
 	par = get_glob_par
 	prb = get_glob_prb
-	# def J(z,x,v):
-	# 	dm = np.dot([(sum((x[prb.N_flex+2:]*(prb.TOU(1:prb.N_flex) - z[1])) + par.lamb.x * x[prb.N_flex+2:]) + par.lamb.z_c*z[1]^2) + par.lamb.h_c * 1/z[3];
+	def J(z,x,v):
+	    dm = np.dot([(sum((x[prb.N_flex+2:]*(prb.TOU(1:prb.N_flex) - z[1])) + par.lamb.x * x[prb.N_flex+2:]) + par.lamb.z_c*z[1]^2) + par.lamb.h_c * 1/z[3];
 
- 	#        		sum((prb.station.pow_max*(prb.TOU[1:prb.N_asap] - z[2])) + par.lamb.z_uc*z[2]^2) + par.lamb.h_uc * 1/z[3]; 
+ 	     	sum((prb.station.pow_max*(prb.TOU[1:prb.N_asap] - z[2])) + par.lamb.z_uc*z[2]^2) + par.lamb.h_uc * 1/z[3]; 
 
- 	#        		sum(prb.station.pow_max*(prb.TOU[1:prb.N_asap] - 0))], [v])
- 	#    	return dm 
-	itermax = 1e4
+ 	       	sum(prb.station.pow_max*(prb.TOU[1:prb.N_asap] - 0))], [v])
+ 	   return dm 
+    itermax = 1e4
     count = 0
     improve = inf 
     zk = [0, 0, 0, 1]
