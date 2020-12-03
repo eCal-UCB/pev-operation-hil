@@ -77,7 +77,7 @@ class Problem:
             self.station_pow_max = 7.2
             self.station_pow_min = 0
         else:
-            event = kwargs[0]
+            event = kwargs["event"]
             self.user_time = round(event["time"] / par.Ts) * par.Ts
             self.user_SOC_init = event["SOC_init"]
             self.user_SOC_need = event["SOC_need"]
@@ -217,7 +217,6 @@ class Optimization:
         # lower and upper bound
         lb = np.vstack((max(self.Problem.TOU) * np.ones((3, 1)), 0))
         ub = np.vstack((2 * max(self.Problem.TOU) * np.ones((2, 1)), 10 * max(self.Problem.TOU), 1))
-
         #equality constraint
         Aeq = [0, 0, 0, 1]
         beq = 1
@@ -303,15 +302,16 @@ def main(new_event = False, time = None, pow_min = None, pow_max = None, oversta
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 0:
-        time = float(sys.argv[2])
-        pow_min = float(sys.argv[3])
-        pow_max = float(sys.argv[4])
-        overstay_duration = float(sys.argv[5])
-        duration = float(sys.argv[6])
-        batt_cap = float(sys.argv[7])
-        SOC_need = float(sys.argv[8])
-        SOC_init = float(sys.argv[9])
+    if len(sys.argv) > 2:
+        time = float(sys.argv[1])
+        pow_min = float(sys.argv[2])
+        pow_max = float(sys.argv[3])
+        overstay_duration = float(sys.argv[4])
+        duration = float(sys.argv[5])
+        batt_cap = float(sys.argv[6])
+        SOC_need = float(sys.argv[7])
+        SOC_init = float(sys.argv[8])
         main(new_event = True, time = time, pow_max = pow_max, pow_min = pow_min, overstay_duration= overstay_duration, duration= duration, batt_cap= batt_cap, SOC_init = SOC_init, SOC_need= SOC_need)
     else:
+        print(sys.argv)
         main()
