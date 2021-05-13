@@ -53,10 +53,18 @@ run setup
 
 
 ## References
-\[1] S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
+\[1] T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, IEEE Trans. on Smart Grid. Availabel here: https://doi.org/10.1109/TSG.2021.3066998. \*equal
 
-\[2] T. Zeng\*, S. Bae\*, B. Travacca, S.J. Moura, _"Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station"_, In preparation.\*equal
+\[2] S. Bae, T. Zeng, B.  Travacca, and S. Moura, _Inducing Human Behavior to Alleviate Overstay at PEV Charging Station_, American Control Conference, 2020. [preprint](https://arxiv.org/pdf/1912.02341.pdf).
 ```
+@article{zeng2021inducing,
+  title={Inducing Human Behavior to Maximize Operation Performance at PEV Charging Station},
+  author={Zeng, Teng and Bae, Sangjae and Travacca, Bertrand and Moura, Scott},
+  journal={IEEE Transactions on Smart Grid},
+  year={2021},
+  publisher={IEEE}
+}
+
 @inproceedings{bae2020inducing,
   title={Inducing Human Behavior to Alleviate Overstay at PEV Charging Station},
   author={Bae, Sangjae and Zeng, Teng and Travacca, Bertrand and Moura, Scott},
@@ -69,4 +77,4 @@ run setup
 
 ## Contact
 * Sangjae Bae: sangjae.bae@berkeley.edu
-* Teng Zeng: hustlejanton@berkeley.edu
+* Teng Zeng: tengzeng@berkeley.edu
