@@ -17,7 +17,8 @@ end
 
 % initialize
 if par.sim.isFixedEventSequence % with one fixed sequence of events
-    act_data = readtable('real_act_data_1day.csv');
+%     act_data = readtable('../real-data/real_act_data_1day.csv');
+    act_data = readtable('../../market_participation/aggregate_model/output_data/real_act_data_1day_aggregate.csv');
     num_events = height(act_data);
     event_idx = 1:num_events;
 else % with multi random sequences of events
@@ -35,7 +36,7 @@ events.time = zeros(num_events,1);
 events.triggered = false*ones(num_events,1); % triggered event flag
 for i = 1:num_events
     n = event_idx(i); % specify event index 
-    if act_data{n, 6} < 0.3 % if the charging duration is less than 0.3 
+    if act_data{n, 6} < 0.25 % if the charging duration is less than 0.25 
                             % hours, we ignore the event
         continue
     end

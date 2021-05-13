@@ -19,6 +19,13 @@ user_keys = station('FLEX_list');
 flex_user_info = zeros(num_flex_user, 6);
 for i = 1:num_flex_user
     user = station(user_keys{i});
+    try
+    if all(user_keys{i} == 'EV11')
+        a = 1;
+    end
+    catch
+
+    end
     start_time = user.time.start/par.Ts; end_time = user.time.end/par.Ts;  
     N_remain = end_time-k/par.Ts;
     TOU_idx = k/par.Ts-start_time+1; % indicate electricity price, also for calculating updated SOC
@@ -36,7 +43,8 @@ existing_user_info = [start_time, -1, prb.N_flex, 1, new_user.SOC_need, new_user
 
 num_col_xk = max(existing_user_info(:, 3)); % set optimization time window, T_end^FLEX
 var_dim_constant = 2*num_col_xk+1;
-xk = ones(var_dim_constant*(num_flex_user+1), 1); % [soc0_newuser .. socN_newuser u0_newuser .. uN_1_newuser; ...;  soc0_extuser .. socN_extsuser u0_extuser .. uN_1_extuser]; 
+xk = repmat([zeros(num_col_xk+1,1); 3.6*ones(num_col_xk,1)],num_flex_user+1,1);
+% xk = ones(var_dim_constant*(num_flex_user+1), 1); % [soc0_newuser .. socN_newuser u0_newuser .. uN_1_newuser; ...;  soc0_extuser .. socN_extsuser u0_extuser .. uN_1_extuser]; 
                                                   % - dimention
                                                   % var_dim_constant x
                                                   % (1+num_flex_user) --->
@@ -47,8 +55,8 @@ xk = ones(var_dim_constant*(num_flex_user+1), 1); % [soc0_newuser .. socN_newuse
                                                   
 itermax = 1e4;
 count = 0; improve = inf;
-zk = [0 0 0 1]';                         % [z_c, z_uc, y, 1];
-vk = [0.45 0.45 0.1]';                     % [sm_c, sm_uc, sm_y];
+zk = [0.2 0.2 1 1]';                         % [z_c, z_uc, y, 1];
+vk = [0.45 0.45 0.1 1]';                     % [sm_c, sm_uc, sm_y];
 Jk = zeros(itermax,1);
 while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
     count = count + 1;
@@ -76,6 +84,10 @@ while count < itermax && improve >= 0 && abs(improve) >= par.opt.eps
 %         fprintf('[ OPT] iter: %d, improve: %.3f\n',count,improve);
 %     end
 end
+
+if count == 1
+    a = 1;
+end
 end
 if par.VIS_DETAIL
     fprintf('elapsed time for running %.f times is: %.2f seconds. \n', idx, toc(test_tic))
@@ -91,6 +103,13 @@ N_max = (var_dim_constant-1)/2;
 zk=z;xk=x;vk=v;
 for i = 1:length(user_keys)
     user = station(user_keys{i});
+    try
+    if all(user_keys{i} == 'EV11')
+        a = 1;
+    end
+    catch
+
+    end
     end_time = user.time.end/par.Ts;  
     N_remain = end_time-k/par.Ts;
 %     user.time.start = k; % update start time 
@@ -98,6 +117,7 @@ for i = 1:length(user_keys)
     try
 %         user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_remain+2:(i+1)*var_dim_constant)];
         user.powers = [zeros((k-user.time.start)/par.Ts,1); xk((i)*var_dim_constant+N_max+2:(i)*var_dim_constant+N_max+2+N_remain-1)];
+%         user.N_remain = N_remain;
     catch
         % do nothing
         a=1;

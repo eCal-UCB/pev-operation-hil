@@ -159,13 +159,11 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     
                     if length(dur) > 1 && length(opt.powers) > 1
                         power = interp1(dur,opt.powers,k);
-%                         try
-%                             if all(ev{1} == 'EV11')
-%                                 a = 1;
-%                             end
-%                         catch
-%                             
-%                         end
+                        try
+                        if all(ev{1} == 'EV11')
+                            a = 1;
+                        end
+                        cat
                     else
                         power = opt.powers(1);
                     end
@@ -193,7 +191,7 @@ for k = par.sim.starttime:par.Ts:par.sim.endtime
                     opt.energy_unsatisfied = (opt.prb.user.SOC_need-opt.prb.user.SOC_init)*opt.prb.user.batt_cap - sum(opt.power_traj_actual)*par.Ts;
                     sim_station.opts{opt.i_event} = opt;
                     
-                    disp([k,opt.i_event,opt.energy_unsatisfied])
+                    disp(opt.energy_unsatisfied)
 %                     disp((opt.prb.user.SOC_need-opt.prb.user.SOC_init)*opt.prb.user.batt_cap)
                     
                     if k < station(ev{1}).time.leave % is overstaying

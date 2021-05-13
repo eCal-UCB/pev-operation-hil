@@ -8,9 +8,9 @@ par.sens_analysis.num_poles = 2:3:17;
 par.monte.num_sims = 1;
 
 % each one day simulation
-par.sim.starttime = 7;
-par.sim.endtime = 22;
-par.sim.isFixedEventSequence = false;
+par.sim.starttime = 0;
+par.sim.endtime = 24;
+par.sim.isFixedEventSequence = true;
 par.sim.isFixedSeed = false;
 par.sim.num_events = 50;
 par.Ts = 0.25; % timestep, hour -- must decompose 1
@@ -19,15 +19,23 @@ par.Ts = 0.25; % timestep, hour -- must decompose 1
 par.base.tariff.overstay = 1.0;
 
 % TOU
-par.TOU = [0.217*ones(1,34) ...    % 0-8.5
-           0.244*ones(1,48-34) ...    % 8.5-12
-           0.268*ones(1,72-48) ...      % 12-16
-           0.244*ones(1,86-72) ...    % 16-21.5
-           0.217*ones(1,96-86)];      % 22-24
+% par.TOU = [0.217*ones(1,34) ...    % 0-8.5
+%            0.244*ones(1,48-34) ...    % 8.5-12
+%            0.268*ones(1,72-48) ...      % 12-16
+%            0.244*ones(1,86-72) ...    % 16-21.5
+%            0.217*ones(1,96-86)];      % 22-24
 
+% ====  make align with DA energy price
+par.TOU = [0.217*ones(1,32) ...       % 0-8
+           0.244*ones(1,48-32) ...    % 8-12
+           0.268*ones(1,64-48) ...    % 12-16
+           0.244*ones(1,84-64) ...    % 16-21
+           0.217*ones(1,96-84)];      % 22-24
+par.TOU_RT = par.TOU + 1; % real time energy price
+       
 % charging station config
-par.station.num_poles = 8;                 % number of charging poles
-par.eff = 0.92;                             % power efficiency
+par.station.num_poles = 30;                 % number of charging poles
+par.eff = 1.0;                             % power efficiency
 
 % dcm params
 par.dcm.choices = [{'charging with flexibility'},{'charging asap'},{'leaving without charging'}];

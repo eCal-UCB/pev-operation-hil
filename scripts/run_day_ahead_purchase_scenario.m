@@ -1,7 +1,26 @@
-% load data
-clear;clc
+function optSol = run_day_ahead_purchase_scenario(varargin)
+%% Initialization
+if nargin == 0
+    demands = readtable('../../market_participation/aggregate_model/output_data/minute_demand_scenario.csv');
+    par.scen_idx = 1; % most flexible
+    fprintf('[%s INIT] LOAD FILE DONE\n',datetime('now'));
+elseif nargin == 1
+    file_dir = varargin{1};
+    demands = readtable(file_dir);
+    fprintf('[%s INIT] LOAD FILE DONE\n',datetime('now'));
+elseif nargin == 2
+    file_dir = varargin{1};
+    par.scen_idx = varargin{2};
+    
+    demands = readtable(file_dir);
+    fprintf('[%s INIT] LOAD FILE DONE\n',datetime('now'));
+else
+    error(sprintf('[%s ERROR] too many input arguments',datetime('now')));
+end
+
+% process data
 % potentially be more than one scenario
-demands = readtable('../../market_participation/aggregate_model/output_data/minute_demand_scenario.csv');
+
 par.p_max = table2array(demands(:,2)); par.p_min = table2array(demands(:,3));
 par.e_max = table2array(demands(:,4)); par.e_min = table2array(demands(:,5));
 par.day_length = 192;
@@ -15,20 +34,21 @@ par.e_max = reshape(par.e_max, par.day_length, par.num_scenario);
 par.e_min = reshape(par.e_min, par.day_length, par.num_scenario);
 
 % convert from kW to MW
-par.to_MW = true;
+par.to_MW = false;
 %% get average / get one scenario
 
 % par.p_max = mean(par.p_max,2);
 % par.p_min = mean(par.p_min,2);
 % par.e_max = mean(par.e_max,2);
 % par.e_min = mean(par.e_min,2);
- 
-par.scen_idx = 8;
-par.p_max = par.p_max(:,par.scen_idx); par.p_min = par.p_min(:,par.scen_idx);
-par.e_max = par.e_max(:,par.scen_idx); par.e_min = par.e_min(:,par.scen_idx);
 
-par.scen_prob = [1];
-par.num_scenario = 1;
+if nargin == 0 || nargin == 2 % given scenario
+    par.p_max = par.p_max(:,par.scen_idx); par.p_min = par.p_min(:,par.scen_idx);
+    par.e_max = par.e_max(:,par.scen_idx); par.e_min = par.e_min(:,par.scen_idx);
+
+    par.scen_prob = [1];
+    par.num_scenario = 1;
+end
 %% specify params
 
 % day ahead TOU
@@ -152,114 +172,111 @@ else
     optSol.E_deviation_minus = value(E_deviation_minus);
     optSol.U_plus = value(U_plus);
     optSol.U_minus = value(U_minus);
+    optSol.to_MW = par.to_MW;
     fprintf('\n****************Objective Value*************\n');
     optObjValue = optSol.obj
 end
 %% plot results - RT energy trajectory
-figure(1)
-plot(par.e_max,'LineWidth', 2)
-hold on 
-plot(par.e_min,'LineWidth', 2)
-hold on
-plot(1:par.day_length, reshape(cumsum(optSol.P)*par.delta_t,par.day_length,[]), '-.', 'LineWidth', 2)
-hold off
-
-
-xlim([1,120])
-xlabel('Time of Day')
-ylabel('Energy Consumption (kWh)')
-if par.to_MW
-    ylabel('Energy Consumption (MWh)')
-end
-title('Optimal Energy Trajectory')
-legend('Energy UB', 'Energy LB', 'Cum Power',  'location', 'best')
-set(gca,'FontSize',16) 
-
-%% plot results - DA energy trajectory
-figure(2)
-% plot(reshape(sum(reshape(par.e_max,4,[],par.num_scenario))*par.delta_t, 48,[]),'LineWidth', 2)
-% hold on 
-% plot(reshape(sum(reshape(par.e_min,4,[],par.num_scenario))*par.delta_t, 48,[]),'LineWidth', 2)
-% hold on
-plot(par.delta_t:par.delta_t:48, par.e_max,'LineWidth', 2)
-hold on
-plot(par.delta_t:par.delta_t:48, par.e_min,'LineWidth', 2)
-hold on
-plot(cumsum(optSol.E_DA), '-.', 'LineWidth', 2)
-hold on
-plot(cumsum(reshape(sum(reshape(optSol.P,4,[],par.num_scenario))*par.delta_t, 48,[])), '-.', 'LineWidth', 2)
-hold off
-
-
-xlim([1,48])
-xlabel('Time of Day')
-ylabel('Energy Consumption (kWh)')
-if par.to_MW
-    ylabel('Energy Consumption (MWh)')
-end
-
-if par.num_scenario == 1
-    title(['Scenario ', num2str(par.scen_idx), ': Optimal Energy Trajectory'])
-else
-    title('Optimal Energy Trajectory')
-end
-
-legend('Energy UB', 'Energy LB', 'Cum E-DA', 'Cum P', 'location', 'best')
-set(gca,'FontSize',16)
-
-%% plot results - power profile
-figure(3)
-is_hourly = true;
-
-if is_hourly
-    yyaxis left
-    plot(mean(reshape(optSol.P, 4, [])), 'LineWidth', 2)
+is_visual = true;
+if is_visual
+    figure(1)
+    plot(par.e_max,'LineWidth', 2)
     hold on 
-    plot(mean(reshape(par.p_max, 4, [])), 'LineWidth', 2)
-    hold on 
-    ylabel('Power (kW)')
-    if par.to_MW
-        ylabel('Power (MW)')
-    end
-    yyaxis right
-    plot(par.TOU_DA, 'LineWidth', 2)
+    plot(par.e_min,'LineWidth', 2)
     hold on
-    plot(par.TOU_RT, 'LineWidth', 2)
-    ylabel('Unit Cost ($/kWh)')
+    plot(1:par.day_length, reshape(cumsum(optSol.P)*par.delta_t,par.day_length,[]), '-.', 'LineWidth', 2)
+    hold off
+
+
+    xlim([1,100])
+    xlabel('Time of Day')
+    ylabel('Energy Consumption (kWh)')
     if par.to_MW
-        ylabel('Unit Cost ($/MWh)')
+        ylabel('Energy Consumption (MWh)')
     end
+    title('Optimal Energy Trajectory')
+    legend('Energy UB', 'Energy LB', 'Cum Power',  'location', 'best')
+    set(gca,'FontSize',16) 
+
+    %% plot results - DA energy trajectory
+    figure(2)
+    % plot(reshape(sum(reshape(par.e_max,4,[],par.num_scenario))*par.delta_t, 48,[]),'LineWidth', 2)
+    % hold on 
+    % plot(reshape(sum(reshape(par.e_min,4,[],par.num_scenario))*par.delta_t, 48,[]),'LineWidth', 2)
+    % hold on
+    plot(par.delta_t:par.delta_t:48, par.e_max,'LineWidth', 2)
+    hold on
+    plot(par.delta_t:par.delta_t:48, par.e_min,'LineWidth', 2)
+    hold on
+    plot(cumsum(optSol.E_DA), '-.', 'LineWidth', 2)
+    hold on
+    plot(cumsum(reshape(sum(reshape(optSol.P,4,[],par.num_scenario))*par.delta_t, 48,[])), '-.', 'LineWidth', 2)
+    hold off
+
+
     xlim([1,30])
-else
-    yyaxis left
-    plot(reshape(optSol.P,par.day_length,[]), 'Color','k', 'LineWidth', 2)
-    hold on 
-    plot(par.p_max(1:par.day_length), 'Color','b', 'LineWidth', 2)
-    hold on 
-    ylabel('Power (kW)')
+    xlabel('Time of Day')
+    ylabel('Energy Consumption (kWh)')
     if par.to_MW
-        ylabel('Power (MW)')
+        ylabel('Energy Consumption (MWh)')
     end
-    yyaxis right
-    plot(repelem(par.TOU_DA,par.N), 'LineWidth', 2)
-    hold on 
-    plot(repelem(par.TOU_RT,par.N), 'LineWidth', 2)
-    ylabel('Unit Cost ($/kWh)')
-    if par.to_MW
-        ylabel('Unit Cost ($/MWh)')
+
+    if par.num_scenario == 1
+        title(['Scenario ', num2str(par.scen_idx), ': Optimal Energy Trajectory'])
+    else
+        title('Optimal Energy Trajectory')
     end
-    xlim([1,120])
+
+    legend('Energy UB', 'Energy LB', 'Cum E-DA', 'Cum P', 'location', 'best')
+    set(gca,'FontSize',16)
+
+    %% plot results - power profile
+    figure(3)
+    is_hourly = true;
+
+    if is_hourly
+        yyaxis left
+        plot(mean(reshape(optSol.P, 4, [])), 'LineWidth', 2)
+        hold on 
+        plot(mean(reshape(par.p_max, 4, [])), 'LineWidth', 2)
+        hold on 
+        ylabel('Power (kW)')
+        if par.to_MW
+            ylabel('Power (MW)')
+        end
+        yyaxis right
+        plot(par.TOU_DA, 'LineWidth', 2)
+        hold on
+        plot(par.TOU_RT, 'LineWidth', 2)
+        ylabel('Unit Cost ($/kWh)')
+        if par.to_MW
+            ylabel('Unit Cost ($/MWh)')
+        end
+        xlim([1,30])
+    else
+        yyaxis left
+        plot(reshape(optSol.P,par.day_length,[]), 'Color','k', 'LineWidth', 2)
+        hold on 
+        plot(par.p_max(1:par.day_length), 'Color','b', 'LineWidth', 2)
+        hold on 
+        ylabel('Power (kW)')
+        if par.to_MW
+            ylabel('Power (MW)')
+        end
+        yyaxis right
+        plot(repelem(par.TOU_DA,par.N), 'LineWidth', 2)
+        hold on 
+        plot(repelem(par.TOU_RT,par.N), 'LineWidth', 2)
+        ylabel('Unit Cost ($/kWh)')
+        if par.to_MW
+            ylabel('Unit Cost ($/MWh)')
+        end
+        xlim([1,100])
+    end
+    hold off
+    xlabel('Time of Day')
+    title('Power Profile')
+    legend('Power', 'Power UB', 'TOU DA', 'TOU RT')
+    set(gca,'FontSize',16) 
 end
-hold off
-xlabel('Time of Day')
-title('Power Profile')
-legend('Power', 'Power UB', 'TOU DA', 'TOU RT')
-set(gca,'FontSize',16) 
-
-
-
-
-
-
-
-
+end

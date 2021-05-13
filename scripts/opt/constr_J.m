@@ -32,13 +32,17 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
         it = it + 1;
         for i = 1:length(station('ASAP_list'))
             opt = station(user_keys{1,i});
-            if k <= opt.time.end
+            if t <= opt.time.end % 04.21.2021 marked changed, correct from "k" to "t"
                 if length(opt.powers) > 1
-                    pow = interp1(opt.time.start:par.Ts:opt.time.end-par.Ts,opt.powers,k);
+                    pow = interp1(opt.time.start:par.Ts:opt.time.end-par.Ts,opt.powers,t);
                 else
                     pow = opt.powers;
                 end
-                asap_power_sum_profile(it) = asap_power_sum_profile(it) + pow;
+                try
+                    asap_power_sum_profile(it) = asap_power_sum_profile(it) + pow;
+                catch
+                    a = 1;
+                end
             end
         end
     end
@@ -48,59 +52,40 @@ function J = constr_J(par,prb,z,x,v,station,k,existing_user_info,var_dim_constan
 %                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1))...
 %                     +par.lambda.z_c*z(1)^2)...
 %                   +par.lambda.h_c * 1/z(3); % with convergence regularization
-    try
-        new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex-1).*(prb.TOU(1:prb.N_flex) - z(1)))...
-                    +par.lambda.z_c*z(1)^2)...
-                  +par.lambda.h_c * 1/z(3); % with convergence regularization
-    catch
-        a = 1;
-    end
     
+    new_flex_obj = sum((x(N_max+2:N_max+2+prb.N_flex-1).*(prb.TOU(1:prb.N_flex) - z(1)))...
+                +par.lambda.z_c*z(1)^2)...
+              +par.lambda.h_c * 1/z(3); % with convergence regularization
 
-%     new_flex_obj = (sum((x(prb.N_flex+2:2*prb.N_flex+1,1).*(prb.TOU(1:prb.N_flex) - z(1)))...
-%                         +par.lambda.x .* x(prb.N_flex+2:2*prb.N_flex+1,1)))...
-%                   +par.lambda.h_c * 1/z(3); % without convergence regularization 
-%     sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))...
-%         +par.lambda.x.*x(prb.N_flex+2:end))...
-%         +par.lambda.z_c*z(1)^2 + par.lambda.h_c * 1/z(3);
-              
-    % part 2: case 2 - charging-ASAP
-%     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
-%                         +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1))...
-%                     +par.lambda.z_c*z(2)^2)...
-%                   +par.lambda.h_c * 1/z(3); % with convergence regularization
-%     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
-%                     +par.lambda.z_c*z(2)^2))...
-%                   +par.lambda.h_c * 1/z(3); % with convergence regularization
     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
                     +par.lambda.z_c*z(2)^2))...
                   +par.lambda.h_c * 1/z(3); % with convergence regularization
 
-%     new_asap_obj = (sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2)))...
-%                         +par.lambda.x .* x(prb.N_asap+2:2*prb.N_asap+1,1)))...
-%                   +par.lambda.h_c * 1/z(3); % without convergence regularization
-              
+       
     % part 3: case 3 - leave
     new_leave_obj = sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0));
     
-%     try
-%     J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj; 
-%         new_asap_obj+existing_flex_obj+existing_asap_obj; 
-%         new_leave_obj], v) + station('cost_dc') * x(end);
-%         J = dot([new_flex_obj;
-%             new_asap_obj; 
-%             new_leave_obj], v);
-%         
-       J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(asap_power_sum_profile + sum(reshape(x,var_dim_constant,length(x)/var_dim_constant)',1));
-        new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(asap_power_sum_profile + [ones(1,prb.N_asap)*prb.station.pow_max zeros(1,var_dim_constant-prb.N_asap)]); 
-        new_leave_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(asap_power_sum_profile)], v);
+    % part 4: demand charge
+    all_power_profile = asap_power_sum_profile + sum(reshape(x,var_dim_constant,length(x)/var_dim_constant)',1);
+    existing_power_profile = asap_power_sum_profile + sum(reshape(x(var_dim_constant+1:end),var_dim_constant,(length(x)/var_dim_constant)-1)',1);
     
-%     J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);
-%             sum((prb.station.pow_max*(prb.TOU(1:prb.N_asap) - z(2))) + par.lambda.z_uc*z(2)^2) + par.lambda.h_uc * 1/z(3);
-%             sum(prb.station.pow_max*(prb.TOU(1:prb.N_asap) - 0))],v); % h_l
-%     catch
-%         a = 1;
-%     end
+    % part 5: power trajectory
+    current_hour = floor(k) + 1; % instead of ceil(k)
+    current_hour_energy = par.optSol.E_DA(current_hour) * par.optSol.to_MW * 1000;
+    current_subhour_steps = (current_hour - k) / par.Ts + 1;
+    
+    % final objective function
+    try
+        J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(all_power_profile);
+            new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(existing_power_profile + [ones(1,prb.N_asap)*prb.station.pow_max zeros(1,var_dim_constant-prb.N_asap)]); 
+            new_leave_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(asap_power_sum_profile); ...
+            par.TOU_RT(k/par.Ts) * max(current_hour_energy - sum(all_power_profile(:,N_max+2:N_max+1+current_subhour_steps))*par.Ts, 0)], v);
+    catch
+        J = dot([new_flex_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(all_power_profile);
+            new_asap_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(existing_power_profile + [ones(1,prb.N_asap)*prb.station.pow_max zeros(1,var_dim_constant-prb.N_asap)]); 
+            new_leave_obj+existing_flex_obj+existing_asap_obj+station('cost_dc') * max(asap_power_sum_profile); ...
+            par.TOU_RT(k/par.Ts) * max(current_hour_energy - sum(all_power_profile(:,N_max+2:end))*par.Ts, 0)], v);
+    end
 end
 
 %J = @(z,x,v) dot([(sum((x(prb.N_flex+2:end).*(prb.TOU(1:prb.N_flex) - z(1)))+par.lambda.x.*x(prb.N_flex+2:end))+par.lambda.z_c*z(1)^2) + par.lambda.h_c * 1/z(3);

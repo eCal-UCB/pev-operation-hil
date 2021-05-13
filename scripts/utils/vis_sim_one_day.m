@@ -88,7 +88,11 @@ if options.display
         choice_times_str = num2str(round(choice_times*100)/100);
         choice_times_str_filtered = cell(length(choice_labels),1);
         for i = 1:length(choice_labels)
+            try
             choice_times_str_filtered{i} = ['(' strtrim(choice_times_str(i,:)) ')'];
+            catch
+                a = 1;
+            end
         end
         
         for j = 1:length(choice_labels)

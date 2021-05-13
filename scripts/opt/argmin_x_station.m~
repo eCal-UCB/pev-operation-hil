@@ -31,7 +31,7 @@ for idx = 1:size(existing_user_info,1)
    end
    N = existing_user_info(idx,3); % get user N_flex, aka the remain duration
    N_max = (var_dim_constant-1)/2;
-   SOC_feas_max = (prb.station.pow_max * N * par.Ts * par.eff)/user.prb.user.batt_cap;
+   SOC_feas_max = (prb.station.pow_max * N * par.Ts * par.eff)/prb.user.batt_cap;
    SOC_need = existing_user_info(idx,5);
    SOC_init = existing_user_info(idx,6);
    SOC_need = min(SOC_need, SOC_feas_max+SOC_init);
@@ -64,7 +64,7 @@ for idx = 1:size(existing_user_info,1)
    
    % system dynamics
    C2L = [diag(-1.*ones(1,N)) zeros(N,1) zeros(N,N_max-N)] + [zeros(N,1)  diag(ones(1,N)) zeros(N,N_max-N)];
-   C2R = [-diag(par.eff*par.Ts/user.prb.user.batt_cap*ones(1,N)) zeros(N,N_max-N)];
+   C2R = [-diag(par.eff*par.Ts/prb.user.batt_cap*ones(1,N)) zeros(N,N_max-N)];
    d2 = zeros(N,1);
    
 
@@ -73,10 +73,10 @@ for idx = 1:size(existing_user_info,1)
 end
 
 % solve optimization
-options = optimoptions('fmincon','Display','off','MaxFunctionEvaluations',10000);
-options.Algorithm = 'sqp';
+options = optimoptions('fmincon','Display','off');
+% options.Algorithm = 'sqp';
 
-[xk,~,exitflag,output] = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
+xk = fmincon(J,ones(size(A_ineq,2),1),A_ineq,b_ineq,A_eq,b_eq,lb,ub,[],options);
 
 function J = constr_J(x)
     N_max = (var_dim_constant-1)/2;
@@ -93,7 +93,7 @@ function J = constr_J(x)
         user = station(user_keys{1,i-1});
         overstay_cost = (user.time.leave - user.time.end) * user.z(3);
         % 04.29.2021 added *par.Ts to calculate electricity cost
-        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration-1,1).*(user.prb.TOU(TOU_idx:end) - user.price)*par.Ts) - overstay_cost);
+        existing_flex_obj = existing_flex_obj + (sum(x(adj_constant+N_max+2:adj_constant+N_max+2+duration-1,1).*(user.prb.TOU(TOU_idx:end) - user.price))*par.Ts - overstay_cost);
     end
     % existing asap user
     user_keys = station('ASAP_list');
