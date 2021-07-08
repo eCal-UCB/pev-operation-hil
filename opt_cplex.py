@@ -9,9 +9,6 @@ import sys
 import cplex 
 from docplex.mp.model import Model 
 
-
-#opt_model  = Model(name= "Nonlinear Program")
-
 class Parameters:
     def __init__(self,sens_num_poles = np.arange(2, 18, 3), monte_num_sims = 1, sim_starttime = 7, sim_endtime = 22,
                  sim_isFixedEventSequence = False, sim_isFixedSeed = False, sim_num_Events = 50, Ts = 0.25,
