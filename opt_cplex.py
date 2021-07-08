@@ -3,7 +3,7 @@ import datetime
 from scipy import interpolate
 import math
 import timeit
-import cvxpy as cp
+import cvxpy as cp ### Note: We will eventually no longer use cvxpy. 
 from scipy.optimize import minimize
 import sys
 import cplex 
