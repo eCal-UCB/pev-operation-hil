@@ -154,7 +154,8 @@ class Optimization:
         # J = @(x) dot([sum((x(N + 2:end). * (prb.TOU(1:N) - z(1))). ^ 2) + par.lambda .h_c * 1 / z(3);
         # % sum((par.station.pow_max * (prb.TOU(1: N) - z(2))).^ 2) + par.lambda .h_uc * 1 / z(3);
         # % 1 / 3 * sum((par.station.pow_max * (prb.TOU(1: N) - 0)).^ 2)], v);
-
+        
+        ## Variable can be fixed as integer in cplex 
         x = cp.Variable(shape = (N + N + 1,1))
         int1 = [x[self.Problem.N_flex + 1 :][i] * (self.Problem.TOU[:self.Problem.N_flex] - z[0])[i] for i in range(N)]
         int2 = [self.Parameters.lam_x * x[self.Problem.N_flex + 1:][i] for i in range(N)]
