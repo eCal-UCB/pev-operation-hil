@@ -1,5 +1,16 @@
 ## This is not fully complete since we need to run the main optimization function 
-class Optimization2:
+
+import numpy as np
+import datetime
+from scipy import interpolate
+import math
+import timeit
+from scipy.optimize import minimize
+import sys
+import cplex 
+from docplex.mp.model import Model 
+
+class Optimization:
     def __init__(self, par, prb):
         self.Parameters = par
         self.Problem = prb
