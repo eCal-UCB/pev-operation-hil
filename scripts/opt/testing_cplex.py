@@ -234,4 +234,91 @@ class Optimization:
         model_z.add_constraint(constraint2)
         model_z.add_constraint(((lb[0], ub[0]), (lb[1], ub[1]), (lb[2], ub[2]), (lb[3], ub[3])))
         return model_z.minimize(J)
+        
+        def run_opt(self):
+            start = timeit.timeit()
+            def J_func(z, x, v):
+                J = np.dot(np.array([(np.sum((np.multiply(x[self.Problem.N_flex + 1:], (self.Problem.TOU[:self.Problem.N_flex ] - z[0])))
+                                             + np.multiply(self.Parameters.lam_x, x[self.Problem.N_flex + 1:]))+
+                                 self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2],
+                             np.sum((self.Problem.station_pow_max * (self.Problem.TOU[0: self.Problem.N_asap ] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2) + self.Parameters.lam_h_uc * 1 / z[3],
+                            np.sum(self.Problem.station_pow_max * (self.Problem.TOU[0: self.Problem.N_asap ] - 0))]), v)
+                return J
+            itermax = 10000
+            count = 0
+            improve = np.inf
+            zk = np.array([0, 0, 0, 1]).reshape(4,1)
+            # [z_c, z_uc, y, 1];
+            xk = np.ones((2 * self.Problem.N_flex + 1, 1)) # [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1 +  # of FLEX
+            vk = np.array([0.45, 0.45, 0.1]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
+            Jk = np.zeros((itermax, 1))
+            while (count < itermax) & (improve >= 0) & (abs(improve) >= self.Parameters.opt_eps):
+                count += 1
+                z = zk
+                x = xk
+                v = vk
+                Jk[count] = J_func(z, x, v)
+                self.Problem.z0 = zk
+                self.Problem.x0 = xk
+                self.Problem.v0 = vk
+                #update control variables
+                zk = self.arg_z(xk, vk)
+                xk = self.arg_x(zk, vk)
+                vk = self.arg_v(zk, xk)
+
+                # compute residual
+                improve = Jk[count] - J_func(zk, xk, vk)
+
+            self.opt_z = z
+            self.opt_tariff_flex = z[0]
+            self.opt_tariff_asap = z[1]
+            self.opt_tariff_overstay = z[2]
+            self.opt_x = x
+            # update demand charge
+            self.opt_peak_pow = max(x[self.Problem.N_flex + 2:])
+            self.opt_flex_SOCs = x[0:self.Problem.N_flex + 1]
+            self.opt_flex_powers = x[self.Problem.N_flex + 2:]
+            self.opt_asap_powers = np.ones((self.Problem.N_asap, 1)) * self.Problem.station_pow_max
+            self.opt_v = v
+            self.opt_prob_flex = v[0]
+            self.opt_prob_asap = v[1]
+            self.opt_prob_leave = v[2]
+            self.opt_J = Jk[0:count]
+            self.opt_num_iter = count
+            self.opt_prb = self.Problem
+            self.opt_par = self.Parameters
+            self.opt_time_start = self.Problem.user_time
+            self.opt_time_end_flex = self.Problem.user_time + self.Problem.user_duration
+            self.opt_time_end_asap = self.Problem.user_time + self.Problem.N_asap * self.Parameters.Ts
+            end = timeit.timeit()
+            if self.Parameters.VIS_DETAIL:
+                print(
+                    ' {0} OPT DONE ({1} sec) sum(vk) = {2}, iterations = {3}\n'.format(datetime.datetime.now(), end - start,
+                                                                                       sum(vk), count))
+    def main(new_event = False, time = None, pow_min = None, pow_max = None, overstay_duration = None, duration= None,batt_cap =None, SOC_need = None, SOC_init = None):
+        par = Parameters()
+        if new_event:
+            event = {"time" : time, "pow_min" : pow_min, "pow_max" : pow_max, "overstay_duration" : overstay_duration, "duration" : duration, "batt_cap" : batt_cap, "SOC_need" : SOC_need, "SOC_init" : SOC_init}
+            prb = Problem(par = par, nargin = 1, event = event)
+        else:
+            prb = Problem(par=par)
+        opt = Optimization(par, prb)
+        opt.run_opt()
+        return
+
+    if __name__ == "__main__":
+        if len(sys.argv) > 2:
+            time = float(sys.argv[1])
+            pow_min = float(sys.argv[2])
+            pow_max = float(sys.argv[3])
+            overstay_duration = float(sys.argv[4])
+            duration = float(sys.argv[5])
+            batt_cap = float(sys.argv[6])
+            SOC_need = float(sys.argv[7])
+            SOC_init = float(sys.argv[8])
+            main(new_event = True, time = time, pow_max = pow_max, pow_min = pow_min, overstay_duration= overstay_duration, duration= duration, batt_cap= batt_cap, SOC_init = SOC_init, SOC_need= SOC_need)
+        else:
+            print(sys.argv)
+            main()
+    
 
