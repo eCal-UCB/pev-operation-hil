@@ -106,12 +106,11 @@ class Problem:
             self.station_pow_min = event["pow_min"]
     
         # DCM parameters
-        
         # asc_flex = 2 + 0.2 * prb.user.duration;
         # asc_asap = 2.5;
         asc_flex = 2 + 0.401 * self.user_duration - 1.8531 * self.user_SOC_init #5.0583
         asc_asap = 1 + 0.865 * self.user_duration - 1.8531 * self.user_SOC_init #3.7088
-        asc_leaving = 0
+        asc_leaving = 0 
         energy_need = self.user_SOC_need * self.user_batt_cap
         # self.dcm_charging_flex.params = [-1 0 0 asc_flex].T
         # DCM parameters for choice 1 -- charging with flexibility
@@ -172,8 +171,10 @@ class Optimization:
         x_vars = {(i,1) for i in range(N+N+1)}
         int1 = [x_vars[self.Problem.N_flex + 1 :][i] * (self.Problem.TOU[:self.Problem.N_flex] - z[0])[i] for i in range(N)]
         int2 = [self.Parameters.lam_x * x_vars[self.Problem.N_flex + 1:][i] for i in range(N)]
+        
         # The objective function 
-        obj_J = ((cp.sum(int1) + cp.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)
+        
+        obj_J = ((np.sum(int1) + np.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)
                + self.Parameters.lam_h_uc * 1 / z[2]) * v[1] + np.sum(self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap ] - 0)) * v[2]
 
         ## Prepare the data to properly put into the constraints 
@@ -205,6 +206,7 @@ class Optimization:
         model_x.add_constraint(lb <= x_vars)
         model_x.add_constraint(x <= ub)
         return model_x.minimize(obj_J)
+    
     def arg_z(self,x,v):
         if sum(v) < 0 | (sum(v) < 1 - self.Parameters.soft_v_eta) | (sum(v) > 1 + self.Parameters.soft_v_eta):
                 raise ValueError('[ ERROR] invalid {0}'.format(v))
