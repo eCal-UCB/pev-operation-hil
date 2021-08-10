@@ -1,4 +1,4 @@
-## This is not fully complete since we need to run the main optimization function 
+## This is not complete since we need to run the main optimization function  
 
 import numpy as np
 import datetime
@@ -10,6 +10,128 @@ import sys
 import cplex 
 from docplex.mp.model import Model 
 
+class Parameters:
+    def __init__(self,sens_num_poles = np.arange(2, 18, 3), monte_num_sims = 1, sim_starttime = 7, sim_endtime = 22,
+                 sim_isFixedEventSequence = False, sim_isFixedSeed = False, sim_num_Events = 50, Ts = 0.25,
+                 base_Tarriff_overstay = 1.0, station_num_poles = 8, eff = 0.92, lam_x = 10, lam_z_c = 10, lam_z_uc = 10,
+                 lam_h_c = 10, lam_h_uc = 10, mu = 1e4, soft_v_eta = 1e-2, opt_eps = 1e-4,VIS_DETAIL = True):
+        self.sens_analysis_num_poles = sens_num_poles
+        # par.sens_analysis.num_poles = [2, 3]
+        # monte carlo simulation 
+        self.monte_num_sims = monte_num_sims
+        
+        # simulation start time 
+        self.sim_starttime = sim_starttime
+        
+        # simulation end time 
+        self.sim_endtime = sim_endtime
+        
+        # Simulation for fixed sequence event 
+        self.sim_isFixedEventSequence = sim_isFixedEventSequence
+        
+        # Simulation for fixed seed 
+        self.sim_isFixedSeed = sim_isFixedSeed
+        
+        # Number of events 
+        self.sim_num_events = sim_num_Events
+        
+        # # timestep, hour - - must decompose   1        
+        self.Ts = Ts 
+        
+        # Baseline  parameters 
+        self.base_tariff_overstay = base_Tarriff_overstay
+        
+        # Time of use (TOU)
+        self.TOU = np.hstack((0.217 * np.ones((1, 34)), # 0 - 8.5
+                   0.244 * np.ones((1, 48 - 34)), # 8.5 - 12
+                   0.268 * np.ones((1, 72 - 48)), # 12 - 16
+                   0.244 * np.ones((1, 86 - 72)), # 16 - 21.5
+                   0.217 * np.ones((1, 96 - 86))))#22 - 24
+
+        ## Charging Station Configuration 
+        # Station number of poles 
+        
+        self.station_num_poles = station_num_poles
+        
+        self.eff = eff # Power Efficiency
+        
+        # Discrete Model Choice parameters 
+        
+        self.dcm_choices = ['charging with flexibility', 'charging asap', 'leaving without charging']
+        
+        # pdfs 
+        self.pdf_visit = np.hstack((0.1 * np.ones((1, 7)), # 0 - 7
+                         0.3 * np.ones((1, 5)), # 7 - 12
+                         0.2 * np.ones((1, 2)), # 12 - 14
+                         0.2 * np.ones((1, 2)), # 14 - 16
+                         0.2 * np.ones((1, 6)), # 16 - 22
+                         0.001 * np.ones((1, 2)))) # 22 - 24
+        
+        # regularization parameters
+        self.lam_x = lam_x
+        self.lam_z_c = lam_z_c
+        self.lam_z_uc = lam_z_uc
+        self.lam_h_c = lam_h_c
+        # TODO: should be average overstay penalty in real data, should move to par
+        self.lam_h_uc = lam_h_uc
+        # TODO: should be average overstay penalty in real data, should move to par
+        self.mu = mu
+        self.soft_v_eta = soft_v_eta #softening equality constraint for v; to avoid numerical error
+        self.opt_eps = opt_eps
+        # debug_mode
+        self.VIS_DETAIL = VIS_DETAIL
+        
+class Problem:
+    def __init__(self,nargin = 0, par = Parameters(),**kwargs):
+        self.par = par
+        if nargin == 0:
+            # user input
+            self.user_time = 14.25
+            self.user_SOC_init = 0.3
+            self.user_SOC_need = 0.5
+            self.user_batt_cap = 80 # kwh
+            self.user_duration = 8 # hrs
+            self.user_overstay_duration = 1
+            self.station_pow_max = 7.2
+            self.station_pow_min = 0
+        else:
+            event = kwargs["event"]
+            self.user_time = round(event["time"] / par.Ts) * par.Ts
+            self.user_SOC_init = event["SOC_init"]
+            self.user_SOC_need = event["SOC_need"]
+            self.user_batt_cap = event["batt_cap"]
+            self.user_duration = round(event["duration"] / par.Ts) * par.Ts
+            self.user_overstay_duration = round(event["overstay_duration"] / par.Ts) * par.Ts
+            self.station_pow_max = event["pow_max"]
+            self.station_pow_min = event["pow_min"]
+    
+        # DCM parameters
+        
+        # asc_flex = 2 + 0.2 * prb.user.duration;
+        # asc_asap = 2.5;
+        asc_flex = 2 + 0.401 * self.user_duration - 1.8531 * self.user_SOC_init #5.0583
+        asc_asap = 1 + 0.865 * self.user_duration - 1.8531 * self.user_SOC_init #3.7088
+        asc_leaving = 0
+        energy_need = self.user_SOC_need * self.user_batt_cap
+        # self.dcm_charging_flex.params = [-1 0 0 asc_flex].T
+        # DCM parameters for choice 1 -- charging with flexibility
+        # self.dcm_charging_asap.params = [0 - 1 0 asc_asap]';
+        # DCM parameters for choice 2 -- charging as soon as possible
+        self.dcm_charging_flex_params = np.array([[-0.1881 * energy_need], [0], [0], [asc_flex]])
+        #% DCM parameters for choice 1 -- charging with flexibility
+        self.dcm_charging_asap_params = np.array([[0], [- 0.1835 * energy_need], [0],[asc_asap]])
+        #% DCM parameters for choice 2 -- charging as soon as possible
+        self.dcm_leaving_params = np.array([[-0.01], [-0.01], [0.005], [asc_leaving]])
+        #% DCM parameters for choice 3 -- leaving without charging
+        self.THETA = np.vstack((self.dcm_charging_flex_params.T, self.dcm_charging_asap_params.T,
+                     self.dcm_leaving_params.T))
+        # problem specifications
+        self.N_flex = int(self.user_duration / par.Ts) # charging duration that is not charged, hour
+        self.N_asap = math.floor((self.user_SOC_need - self.user_SOC_init) *
+                                 self.user_batt_cap / self.station_pow_max / par.eff / par.Ts)
+        self.TOU = interpolate.interp1d(np.arange(0, 24 - 0.25 + 0.1, 0.25), par.TOU, kind = 'nearest')(np.arange(self.user_time,0.1 + self.user_time + self.user_duration - par.Ts,par.Ts)).T
+
+        
 class Optimization:
     def __init__(self, par, prb):
         self.Parameters = par
