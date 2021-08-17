@@ -1,4 +1,4 @@
-## Collaboration of German and Deep
+## The objective is to use CPLEX solver to solve single charger optimization 
 import numpy as np
 import datetime
 from scipy import interpolate
