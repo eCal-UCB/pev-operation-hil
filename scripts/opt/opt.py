@@ -192,7 +192,7 @@ class Optimization:
         obj = cp.Minimize(J)
         x.value = self.Problem.x0
         problem = cp.Problem(obj, constraints)
-        problem.solve(solver=cp.CVXOPT, warm_start=True)
+        problem.solve(solver='GUROBI', warm_start=True)
         return x.value
 
     def argmin_z(self, x, v):
