@@ -332,12 +332,12 @@ class Simulation:
             seed_val = seed
             np.random.seed(seed_val)
         if par.sim_isFixedEventSequence:
-            act_data = pd.read_csv("real_act_data_1day.csv")
+            act_data = pd.read_csv("real-data/real_act_data_1day.csv")
             num_events = len(act_data)
             event_idx = range(num_events)
         else:
             num_events = par.sim_num_events
-            act_data = pd.read_csv("real_act_data.csv")
+            act_data = pd.read_csv("real-data/real_act_data.csv")
             event_idx = np.sort(np.random.randint(0, len(act_data) - 1, num_events))
         self.events = {}
         self.events["inp"] = []
@@ -546,8 +546,8 @@ class Simulation:
                 ax5.set_xlabel("Hour of the day")
                 ax5.grid(True)
                 ax5.set_ylabel("# of service")
-                plt.savefig("one_day_temporal.eps")
-                plt.savefig("one_day_temporal.png")
+                plt.savefig("Figures/one_day_temporal.eps")
+                plt.savefig("Figures/one_day_temporal.png")
 
             if options["choices"]:
                 fig = plt.figure(figsize = (10,5))
@@ -578,8 +578,8 @@ class Simulation:
                 plt.xlim(1, len(choice_probs))
                 plt.ylim(0,1)
                 plt.legend("", "choice")
-                plt.savefig("one_day_choice.png")
-                plt.savefig("one_day_choice.eps")
+                plt.savefig("Figures/one_day_choice.png")
+                plt.savefig("Figures/one_day_choice.eps")
 
                 # fig, (ax2,ax3) = plt.subplots(1,2)
                 # ax1.fill_between(range(len(choice_labels)), choice_probs)
