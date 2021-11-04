@@ -200,7 +200,7 @@ class Optimization:
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
-        J =    u.T @ TOU
+        J =    u.T @ TOU+ cp.norm(u,2) * lam_x
 
 
         ## Constraints 
