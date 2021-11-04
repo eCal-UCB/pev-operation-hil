@@ -60,21 +60,21 @@ class Parameters:
         self.VIS_DETAIL = VIS_DETAIL
 
 class Problem:
-    def __init__(self,nargin = 0, par = Parameters(),**kwargs):
+    def __init__(self, par ,**kwargs):
         self.par = par
-        if nargin == 0:
-            # user input
-            event = {}
-            event["time"] = 14.25
-            event["SOC_init"] = 0.3
-            event["SOC_need"]= 0.5
-            event["batt_cap"] = 80
-            event["duration"] = 8
-            event["overstay_duration"] = 1
-            event["pow_max"] = 7.2
-            event["pow_min"] = 0 
-        else:
-            event = kwargs["event"]
+        # if nargin == 0:
+        #     # user input
+        #     event = {}
+        #     event["time"] = 14.25
+        #     event["SOC_init"] = 0.3
+        #     event["SOC_need"]= 0.5
+        #     event["batt_cap"] = 80
+        #     event["duration"] = 8
+        #     event["overstay_duration"] = 1
+        #     event["pow_max"] = 7.2
+        #     event["pow_min"] = 0 
+        # else:
+        event = kwargs["event"]
         self.event = event
         
         self.user_time = round(event["time"] / par.Ts) * par.Ts
@@ -269,7 +269,7 @@ def main(new_event = False, time = None, pow_min = None, pow_max = None, oversta
     par = Parameters(TOU = TOU)
     if new_event:
         event = {"time" : time, "pow_min" : pow_min, "pow_max" : pow_max, "overstay_duration" : overstay_duration, "duration" : duration, "batt_cap" : batt_cap, "SOC_need" : SOC_need, "SOC_init" : SOC_init}
-        prb = Problem(par = par, nargin = 1, event = event)
+        prb = Problem(par = par, event = event)
     else:
         prb = Problem(par=par)
     opt = Optimization(par, prb)
