@@ -188,7 +188,7 @@ class Optimization:
         ### Define objective function
         # Flex Charging 
         #f_flex = cp.multiply(u , (TOU[:N_flex] - z[0]).reshape((N_flex))) # + cp.sum_squares(u) * lam_x
-        f_flex = u.T @ TOU + cp.sum_squares(u) * lam_x
+        f_flex = u.T @ TOU + cp.norm(u,2) * lam_x
         g_flex = lam_h_c * 1 / z[2] 
         
         J_1 =  v[0] * (f_flex)
@@ -200,7 +200,7 @@ class Optimization:
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
-        J =   u.T @ TOU
+        J =   f_flex
 
 
         ## Constraints 
