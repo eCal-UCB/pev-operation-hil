@@ -200,7 +200,7 @@ class Optimization:
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
-        J =  J_1 
+        J =  u.T @ TOU
 
 
         ## Constraints 
@@ -218,8 +218,8 @@ class Optimization:
         ## Solve 
         obj = cp.Minimize(J)
         prob = cp.Problem(obj, constraints)
-        prob.solve(solver='GUROBI', warm_start=True)
-        print("u:",np.round(u.value,1 ),"SOC:",np.round(SOC.value, 1))
+        prob.solve(solver='GUROBI')
+        print("u:",np.round(u.value,2 ),"SOC:",np.round(SOC.value, 2))
 
         return  u.value, SOC.value
 
@@ -265,7 +265,7 @@ class Optimization:
 def main(new_event = False, time = None, pow_min = None, pow_max = None, overstay_duration = None, duration= None,batt_cap =None, SOC_need = None, SOC_init = None):
     
     TOU = np.ones((96,)) 
-    TOU[20:60] = np.ones(shape = (40,)) * 5
+    TOU[40:60] = np.ones(shape = (20,)) * 5
     par = Parameters(TOU = TOU)
     if new_event:
         event = {"time" : time, "pow_min" : pow_min, "pow_max" : pow_max, "overstay_duration" : overstay_duration, "duration" : duration, "batt_cap" : batt_cap, "SOC_need" : SOC_need, "SOC_init" : SOC_init}
@@ -281,6 +281,6 @@ def main(new_event = False, time = None, pow_min = None, pow_max = None, oversta
     return
 
 if __name__ == "__main__":
-    main(new_event = True, time = 4.25, pow_max = 10, pow_min = 0, overstay_duration= 1, duration= 12, batt_cap= 80, SOC_init = 0.3, SOC_need= 0.8)
+    main(new_event = True, time = 4.25, pow_max = 10, pow_min = 0, overstay_duration= 1, duration= 12, batt_cap= 100, SOC_init = 0.3, SOC_need= 0.8)
 
 
