@@ -112,6 +112,8 @@ class Problem:
                                  self.user_batt_cap / self.station_pow_max / par.eff / par.Ts)
         
         self.TOU = interpolate.interp1d(np.arange(0, 24 - 0.25 + 0.1, 0.25), par.TOU, kind = 'nearest')(np.arange(self.user_time,0.1 + self.user_time + self.user_duration - par.Ts,par.Ts)).T
+        print("Interpolated TOU Cost:", TOU)
+
 class Optimization:
 
     def __init__(self, par, prb):
@@ -200,7 +202,7 @@ class Optimization:
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
-        J =    u.T @ TOU+ cp.norm(u,2) * lam_x
+        J =    J_1 + J_2 + J_3
 
 
         ## Constraints 
@@ -218,7 +220,7 @@ class Optimization:
         ## Solve 
         obj = cp.Minimize(J)
         prob = cp.Problem(obj, constraints)
-        prob.solve(solver='GUROBI')
+        prob.solve(solver='ECOS')
         print("u:",np.round(u.value,2 ),"SOC:",np.round(SOC.value, 2))
 
         return  u.value, SOC.value
