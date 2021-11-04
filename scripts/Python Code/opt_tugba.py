@@ -200,7 +200,7 @@ class Optimization:
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
-        J =  f_flex
+        J =   u.T @ TOU
 
 
         ## Constraints 
