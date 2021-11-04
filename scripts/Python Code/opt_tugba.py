@@ -223,6 +223,45 @@ class Optimization:
 
         return  u.value, SOC.value
 
+    def run_opt(self):
+        start = timeit.timeit()
+
+        itermax = 10000
+        count = 0
+        improve = np.inf
+        zk = np.array([0, 0, 0, 1]).reshape(4,1)
+        # [z_c, z_uc, y, 1];
+        # xk = np.ones((2 * self.Problem.N_flex + 1, 1)) # [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1 +  # of FLEX
+        vk = np.array([0.45, 0.45, 0.1]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
+        # Jk = np.zeros((itermax, 1))
+
+        power_flex, SOC_flex = self.argmin_x(zk, vk)
+
+        opt = {}
+        opt["z"] = zk
+        opt["tariff_flex"] = zk[0]
+        opt["tariff_asap"] = zk[1]
+        opt["tariff_overstay"] = zk[2]
+        # opt["x"] = xk
+        # update demand charge
+        opt["peak_pow"] = max(xk[self.Problem.N_flex + 1:])
+        opt["flex_SOCs"] = SOC_flex
+        opt["flex_powers"] = power_flex
+        opt["asap_powers"] = np.ones((self.Problem.N_asap, 1)) * self.Problem.station_pow_max
+        opt["v"] = vk
+        opt["prob_flex"] = vk[0]
+        opt["prob_asap"] = vk[1]
+        opt["prob_leave"] = vk[2]
+        opt["J"] = Jk[0:count-1]
+        opt["num_iter"] = count
+        opt["prb"] = self.Problem
+        opt["par"] = self.Parameters
+        opt["time_start"] = self.Problem.user_time
+        opt["time_end_flex"] = self.Problem.user_time + self.Problem.user_duration
+        opt["time_end_asap"] = self.Problem.user_time + self.Problem.N_asap * self.Parameters.Ts
+        end = timeit.timeit()
+        return opt
+
 def main(new_event = False, time = None, pow_min = None, pow_max = None, overstay_duration = None, duration= None,batt_cap =None, SOC_need = None, SOC_init = None):
     
     TOU = np.ones((96,)) 
@@ -237,7 +276,7 @@ def main(new_event = False, time = None, pow_min = None, pow_max = None, oversta
 
     z = [50, 50, 10, 1]
     v = [0.45,0.45,0.1]
-    power_flex, soc_flex = opt.argmin_x(z,v)
+    opt = opt.run_opt()
 
     return
 
