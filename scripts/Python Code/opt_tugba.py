@@ -233,7 +233,7 @@ class Optimization:
         # [z_c, z_uc, y, 1];
         # xk = np.ones((2 * self.Problem.N_flex + 1, 1)) # [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1 +  # of FLEX
         vk = np.array([0.45, 0.45, 0.1]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
-        # Jk = np.zeros((itermax, 1))
+        Jk = np.zeros((itermax, 1))
 
         power_flex, SOC_flex = self.argmin_x(zk, vk)
 
@@ -244,7 +244,7 @@ class Optimization:
         opt["tariff_overstay"] = zk[2]
         # opt["x"] = xk
         # update demand charge
-        opt["peak_pow"] = max(xk[self.Problem.N_flex + 1:])
+        opt["peak_pow"] = max(power_flex)
         opt["flex_SOCs"] = SOC_flex
         opt["flex_powers"] = power_flex
         opt["asap_powers"] = np.ones((self.Problem.N_asap, 1)) * self.Problem.station_pow_max
