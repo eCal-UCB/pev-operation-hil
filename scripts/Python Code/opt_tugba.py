@@ -229,7 +229,7 @@ class Optimization:
         itermax = 10000
         count = 0
         improve = np.inf
-        zk = np.array([0, 0, 0, 1]).reshape(4,1)
+        zk = np.array([10,10,10,1]).reshape(4,1)
         # [z_c, z_uc, y, 1];
         # xk = np.ones((2 * self.Problem.N_flex + 1, 1)) # [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1 +  # of FLEX
         vk = np.array([0.45, 0.45, 0.1]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
