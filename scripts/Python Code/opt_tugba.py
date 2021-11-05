@@ -198,7 +198,7 @@ class Optimization:
         # ASAP Charging
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1]))
         g_asap = lam_h_uc * 1 / z[2] 
-        J_2 =  v[1] * (f_asap + g_asap)
+        J_2 =  0 # v[1] * (f_asap + g_asap)
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
 
@@ -220,7 +220,7 @@ class Optimization:
         ## Solve 
         obj = cp.Minimize(J)
         prob = cp.Problem(obj, constraints)
-        prob.solve(solver='ECOS')
+        prob.solve(solver='GUROBI')
         print("u:",np.round(u.value,2 ),"SOC:",np.round(SOC.value, 2))
 
         return  u.value, SOC.value
