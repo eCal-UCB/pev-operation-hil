@@ -112,7 +112,7 @@ class Problem:
                                  self.user_batt_cap / self.station_pow_max / par.eff / par.Ts)
         
         self.TOU = interpolate.interp1d(np.arange(0, 24 - 0.25 + 0.1, 0.25), par.TOU, kind = 'nearest')(np.arange(self.user_time,0.1 + self.user_time + self.user_duration - par.Ts,par.Ts)).T
-        print("Interpolated TOU Cost:", TOU)
+        print("Interpolated TOU Cost:", self.TOU)
 
 class Optimization:
 
@@ -200,8 +200,8 @@ class Optimization:
         g_asap = lam_h_uc * 1 / z[2] 
         J_2 =  0 # v[1] * (f_asap + g_asap)
         # Leave
-        J_3 = cp.sum(TOU[:N_asap])
-        print("hello")
+        J_3 = 0 # cp.sum(TOU[:N_asap])
+        print("hello2")
 
         J =    J_1 + J_2 + J_3
 
