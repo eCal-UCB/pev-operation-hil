@@ -201,6 +201,7 @@ class Optimization:
         J_2 =  0 # v[1] * (f_asap + g_asap)
         # Leave
         J_3 = cp.sum(TOU[:N_asap])
+        print("hello")
 
         J =    J_1 + J_2 + J_3
 
