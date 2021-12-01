@@ -11,10 +11,26 @@ import matplotlib.pyplot as plt
 
 
 class Parameters:
+    """
+    lam_x
+    lam_z_c 
+    lam_z_uc
+    lam_h_c
+    lam_h_uc
+    """
     def __init__(self,sens_num_poles = np.arange(2, 18, 3), monte_num_sims = 1, sim_starttime = 7, sim_endtime = 22,
                  sim_isFixedEventSequence = False, sim_isFixedSeed = False, sim_num_Events = 50, Ts = 0.25,
-                 base_Tarriff_overstay = 1.0, station_num_poles = 8, eff = 0.92, lam_x = 10, lam_z_c = 10, lam_z_uc = 10,
-                 lam_h_c = 10, lam_h_uc = 10, mu = 1e4, soft_v_eta = 1e-2, opt_eps = 1e-4,VIS_DETAIL = True):
+                 base_Tarriff_overstay = 1.0, station_num_poles = 8, eff = 0.92, 
+                 lam_x = 10, 
+                 lam_z_c = 10, 
+                 lam_z_uc = 10,
+                 lam_h_c = 10, 
+                 lam_h_uc = 10, 
+                 mu = 1e4, 
+                 soft_v_eta = 1e-2, 
+                 opt_eps = 1e-4,
+                 VIS_DETAIL = True):
+        
         self.sens_analysis_num_poles = sens_num_poles
         # par.sens_analysis.num_poles = [2, 3]
         # monte carlo
@@ -158,10 +174,12 @@ class Optimization:
         # % sum((par.station.pow_max * (prb.TOU(1: N) - z(2))).^ 2) + par.lambda .h_uc * 1 / z(3);
         # % 1 / 3 * sum((par.station.pow_max * (prb.TOU(1: N) - 0)).^ 2)], v);
         x = cp.Variable(shape = (N + N + 1,1))
+
+        # NOTE: These look wrong 
         int1 = [x[self.Problem.N_flex + 1 :][i] * (self.Problem.TOU[:self.Problem.N_flex] - z[0])[i] for i in range(N)]
         int2 = [self.Parameters.lam_x * x[self.Problem.N_flex + 1:][i] for i in range(N)]
-        J = ((np.sum(int1) + np.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)
-           + self.Parameters.lam_h_uc * 1 / z[2]) * v[1] + np.sum(self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap ] - 0)) * v[2]
+
+        J =  ((np.sum(int1) + np.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)+ self.Parameters.lam_h_uc * 1 / z[2]) * v[1] + np.sum(self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap ] - 0)) * v[2]
 
         # inequality constraint
         A1L = np.hstack((np.zeros((1, N)), np.array([[-1]])))
@@ -204,17 +222,21 @@ class Optimization:
 
         if sum(v) < 0 | (sum(v) < 1 - self.Parameters.soft_v_eta) | (sum(v) > 1 + self.Parameters.soft_v_eta):
             raise ValueError('[ ERROR] invalid {0}'.format(v))
+        ### ARE THESE NECESSARY? DONT THINK WE ARE USING THEM IN THE FUNCTION. 
         int0 = lambda z: np.sum([self.Problem.THETA[0][i] * z[i] for i in range(4)])
         int1 = lambda z: np.sum([self.Problem.THETA[1][i] * z[i] for i in range(4)])
         int2 = lambda z: np.sum([self.Problem.THETA[2][i] * z[i] for i in range(4)])
         lse = lambda z: np.log(np.exp(int0(z)) + np.exp(int1(z)) + np.exp(int2(z)))
         int3 = lambda z: np.sum([z[i] * (self.Problem.THETA.T @ v)[i] for i in range(4)])
+        ## VARIABLE IS NOT DEFINED ... 
+        ## OBJECTIVE LOOKS THE SAME 
         J = lambda z: (((np.sum((np.multiply(x[self.Problem.N_flex + 1 :], (self.Problem.TOU[0: self.Problem.N_flex] - z[0]))) +
                      np.multiply(self.Parameters.lam_x, x[self.Problem.N_flex + 1:])) +
               self.Parameters.lam_z_c * z[0] ** 2) +
              self.Parameters.lam_h_c * 1 / z[2]) * v[0] + ((np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap ] - z[1]))+self.Parameters.lam_z_uc * z[1] ** 2) + self.Parameters.lam_h_uc * 1 / z[2]) * v[1])
         + (np.sum(self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap])) * v[2]) \
         + self.Parameters.mu * (lse(z) - int3(z)))
+        
         A = [1, -1, 0, 0]
         b = 0
         #charging tariff for charging asap must be bigger
