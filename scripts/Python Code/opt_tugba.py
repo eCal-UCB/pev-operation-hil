@@ -147,6 +147,9 @@ class Optimization:
         Note: delta_k is not in the objective function!! 
         Check if it could make difference since power is kW cost is per kWh 
 
+        Outputs
+        u: power 
+        SOC: SOC level 
         """
     
         ### Read parameters 
@@ -162,7 +165,7 @@ class Optimization:
         delta_k = self.Parameters.Ts
         eff = self.Parameters.eff
         user_bat_cap = self.Problem.user_batt_cap  
-
+        print("Lam_X:",lam_x)
         print(N_flex, N_asap, TOU)
 
         
@@ -193,15 +196,15 @@ class Optimization:
         f_flex = u.T @ TOU + cp.norm(u,2) * lam_x
         g_flex = lam_h_c * 1 / z[2] 
         
-        J_1 =  v[0] * (f_flex)
+        J_1 =  v[0] * (f_flex + g_flex)
         
         # ASAP Charging
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1]))
         g_asap = lam_h_uc * 1 / z[2] 
-        J_2 =  0 # v[1] * (f_asap + g_asap)
+        J_2 =  v[1] * (f_asap + g_asap)
         # Leave
-        J_3 = 0 # cp.sum(TOU[:N_asap])
-        print("hello2")
+        J_3 = v[2] * cp.sum(TOU[:N_asap])
+        print("hello_test")
 
         J =    J_1 + J_2 + J_3
 
