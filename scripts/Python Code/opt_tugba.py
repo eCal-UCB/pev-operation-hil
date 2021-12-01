@@ -124,6 +124,158 @@ class Optimization:
         self.opt_tariff_flex = None
         self.opt_tariff_overstay = None
 
+    def argmin_v(self, u, z):
+
+        """
+
+        Parameters 
+        Decision Variables: 
+        v: price [ sm(theta_flex, z), sm(theta_asap, z), sm(theta_leave, z) ], (3,1)
+
+        lse_conjugate = 
+        """
+  
+        ### Read parameters 
+        N_flex = self.Problem.N_flex
+        N_asap = self.Problem.N_asap
+        TOU = self.Problem.TOU
+        station_pow_max = self.Problem.station_pow_max
+        lam_x = self.Parameters.lam_x
+        lam_h_c = self.Parameters.lam_h_c
+        lam_h_uc = self.Parameters.lam_h_uc
+        lam_z_c = self.Parameters.lam_z_c
+        lam_z_uc = self.Parameters.lam_z_uc
+
+        mu = self.Parameters.mu
+        THETA = self.Problem.THETA 
+        soft_v_eta = self.Parameters.soft_v_eta
+
+
+
+        ### Decision Variables
+        v = cp.Variable(shape = (3), pos = True)
+
+        ### Define objective function
+        # Flex Charging 
+        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
+        f_flex = u.T @ (TOU - z[0])
+        g_flex = lam_h_c * 1 / z[2]
+        
+
+        J_1 =  v[0] * (f_flex + g_flex + reg_flex)
+        
+        # ASAP Charging
+        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
+        f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1]))
+        g_asap = lam_h_uc * 1 / z[2]
+
+        J_2 =  v[1] * (f_asap + g_asap + reg_asap)
+        
+        # Leave
+        J_3 = v[2] * cp.sum(TOU[:N_asap] * station_pow_max) 
+
+        ### Log sum function conjugate: negative entropy 
+        lse_conj = cp.sum(-cp.entr(v))
+        func = v.T @ (THETA @ z)
+
+        J_4 = mu * (lse_conj - func) 
+        J =    J_1 + J_2 + J_3 + J_4
+
+        constraints = [v >= 0 ]
+        # constraints += [cp.sum(v) == 1 ]
+        constraints += [ v <= np.array((1,1,0.3))] # What is this? 
+        constraints += [ cp.sum(v) >= 1 - soft_v_eta ]
+        constraints += [ cp.sum(v) <= 1 + soft_v_eta ]
+        
+        ## Solve 
+        obj = cp.Minimize(J)
+        prob = cp.Problem(obj, constraints)
+        prob.solve()  
+        print("v",np.round(v.value,2),"status",prob.status)
+    
+
+        return v.value
+
+    def argmin_z(self, u, v):
+        """
+
+        Decision Variables: 
+        z: price [tariff_flex, tariff_asap, tariff_overstay, leave = 1 ]
+
+        Parameters: 
+        u, array, power for flex charging 
+        v, array with softmax results [sm_c, sm_uc, sm_y] (sm_y = leave)
+        lam_x, regularization parameter for sum squares of the power var (u)
+        lam_z_c, regularization parameter for sum squares of the price flex (u)
+        lam_z_uc, regularization parameter for sum squares of the price asap (u)
+        lam_h_c, regularization parameter for g_flex
+        lam_h_uc, regularization parameter for g_asap
+        N_flex: timesteps arrival to departure 
+        N_asap: timesteps required when charging at full capacity
+
+        """
+        
+        ### Read parameters 
+        N_flex = self.Problem.N_flex
+        N_asap = self.Problem.N_asap
+        TOU = self.Problem.TOU
+        station_pow_max = self.Problem.station_pow_max
+        lam_x = self.Parameters.lam_x
+        lam_h_c = self.Parameters.lam_h_c
+        lam_h_uc = self.Parameters.lam_h_uc
+        mu = self.Parameters.mu
+        THETA = self.Problem.THETA 
+        lam_z_c = self.Parameters.lam_z_c
+        lam_z_uc = self.Parameters.lam_z_uc
+        print(THETA,THETA.shape)
+        print(v,v.shape)
+
+
+
+        ### Decision Variables
+        z = cp.Variable(shape = (4), pos = True)
+
+    
+        ### Define objective function
+        # Flex Charging 
+        #f_flex = cp.multiply(u , (TOU[:N_flex] - z[0]).reshape((N_flex))) # + cp.sum_squares(u) * lam_x
+        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
+        f_flex = u.T @ (TOU - z[0])+ cp.norm(u,2) * lam_x
+        # NOTE: I CANT SOLVE Z[2]. Alter the form or 
+        # g_flex = lam_h_c * 1 / z[2]
+        g_flex = 1 
+        J_1 =  v[0] * (f_flex + g_flex + reg_flex)
+        
+        # ASAP Charging
+        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
+        f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1]))
+        # g_asap = lam_h_uc * 1 / z[2]
+        g_asap = 1 
+        J_2 =  v[1] * (f_asap + g_asap + reg_asap)
+        # Leave
+        J_3 = v[2] * cp.sum(TOU[:N_asap] * station_pow_max)
+
+        ### Log sum function 
+        lse = cp.log_sum_exp(THETA @ z)
+        func = z.T @ (THETA.T @ v)
+
+        J_4 = mu * (lse - func) 
+        J =    J_1 + J_2 + J_3 + J_4
+        
+        constraints = [z[3] == 1]
+        constraints += [ z >= np.array((max(TOU),max(TOU), max(TOU),0 ))]
+        constraints += [ z <= np.array((max(TOU) * 2 ,max(TOU) * 2, max(TOU) * 10, 1))]
+        constraints += [z[1] - z[0] >= 0] # asap tariff must be larger
+        
+        ## Solve 
+        obj = cp.Minimize(J)
+        prob = cp.Problem(obj, constraints)
+        prob.solve(solver = 'SCS')  
+        print("z",np.round(z.value,5),"status",prob.status)
+        
+        return z.value
+
+
     def argmin_x(self, z, v):
         """
         Function to minimize charging cost. Flexible charging with variable power schedule
@@ -165,8 +317,9 @@ class Optimization:
         delta_k = self.Parameters.Ts
         eff = self.Parameters.eff
         user_bat_cap = self.Problem.user_batt_cap  
-        print("Lam_X:",lam_x)
-        print(N_flex, N_asap, TOU)
+        lam_z_c = self.Parameters.lam_z_c
+        lam_z_uc = self.Parameters.lam_z_uc
+
 
         
         # N_flex = kwargs["N_flex"]
@@ -193,18 +346,22 @@ class Optimization:
         ### Define objective function
         # Flex Charging 
         #f_flex = cp.multiply(u , (TOU[:N_flex] - z[0]).reshape((N_flex))) # + cp.sum_squares(u) * lam_x
-        f_flex = u.T @ TOU + cp.norm(u,2) * lam_x
+        ## what happened to (tou-z)? 
+
+        ## z[2], what should the value be? Should we optimize it or do we have an idea? 
+        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c
+        f_flex = u.T @ (TOU - z[0]) 
         g_flex = lam_h_c * 1 / z[2] 
         
-        J_1 =  v[0] * (f_flex + g_flex)
+        J_1 =  v[0] * (f_flex + g_flex + reg_flex)
         
         # ASAP Charging
+        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1]))
         g_asap = lam_h_uc * 1 / z[2] 
-        J_2 =  v[1] * (f_asap + g_asap)
+        J_2 =  v[1] * (f_asap + g_asap + reg_asap)
         # Leave
         J_3 = v[2] * cp.sum(TOU[:N_asap])
-        print("hello_test")
 
         J =    J_1 + J_2 + J_3
 
@@ -217,6 +374,7 @@ class Optimization:
         constraints += [u >= 0]
         constraints += [u <= station_pow_max]
 
+        # System dynamics
         for i in range(0,N_flex ): 
             constraints += [SOC[i + 1] == SOC[i] + (eff * delta_k * u[i]) / user_bat_cap]
 
@@ -238,10 +396,12 @@ class Optimization:
         zk = np.array([10,10,10,1]).reshape(4,1)
         # [z_c, z_uc, y, 1];
         # xk = np.ones((2 * self.Problem.N_flex + 1, 1)) # [soc0, ..., socN, u0, ..., uNm1]; - multiple dimensions 1 +  # of FLEX
-        vk = np.array([0.45, 0.45, 0.1]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
+        vk = np.array([0.01, 0.68, 0.3]).reshape(3,1)                     # [sm_c, sm_uc, sm_y]
         Jk = np.zeros((itermax, 1))
 
-        power_flex, SOC_flex = self.argmin_x(zk, vk)
+        uk_flex, SOCk_flex = self.argmin_x(zk, vk)
+        zk = self.argmin_z(uk_flex, vk)
+        vk = self.argmin_v(uk_flex, zk)
 
         opt = {}
         opt["z"] = zk
@@ -250,9 +410,9 @@ class Optimization:
         opt["tariff_overstay"] = zk[2]
         # opt["x"] = xk
         # update demand charge
-        opt["peak_pow"] = max(power_flex)
-        opt["flex_SOCs"] = SOC_flex
-        opt["flex_powers"] = power_flex
+        opt["peak_pow"] = max(uk_flex)
+        opt["flex_SOCs"] = SOCk_flex
+        opt["flex_powers"] = uk_flex
         opt["asap_powers"] = np.ones((self.Problem.N_asap, 1)) * self.Problem.station_pow_max
         opt["v"] = vk
         opt["prob_flex"] = vk[0]
@@ -280,8 +440,6 @@ def main(new_event = False, time = None, pow_min = None, pow_max = None, oversta
         prb = Problem(par=par)
     opt = Optimization(par, prb)
 
-    z = [50, 50, 10, 1]
-    v = [0.45,0.45,0.1]
     opt = opt.run_opt()
 
     return
