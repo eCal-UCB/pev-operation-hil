@@ -11,7 +11,7 @@ class Parameters:
     def __init__(self, TOU = np.ones((96,)), z0 = np.array([1,1,1,1]).reshape(4,1) ,
                 v0 = np.array([0.33, 0.33, 0.33]).reshape(3,1) ,  Ts = 0.25, 
                 base_tarriff_overstay = 1.0, eff = 1, lam_x = 10, lam_z_c = 10, lam_z_uc = 10,
-                lam_h_c = 10, lam_h_uc = 10, soft_v_eta = 1e-2, opt_eps = 1e-6):
+                lam_h_c = 10, lam_h_uc = 10, soft_v_eta = 1e-3, opt_eps = 0.0001):
 
 
         self.v0 = v0
@@ -190,7 +190,7 @@ class Optimization:
 
         ### Define objective function
         # Flex Charging 
-        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
+        # reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
         
         f_flex = u.T @ (TOU - z[0]) * delta_t
         
@@ -200,7 +200,7 @@ class Optimization:
         J_1 =  v[0] * (f_flex)
         
         # ASAP Charging
-        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
+        # reg_asap =  cp.norm(z[1],2) * lam_z_uc 
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1])) * delta_t
         g_asap = lam_h_uc * 1 / z[2]
 
@@ -220,6 +220,8 @@ class Optimization:
 
         constraints = [v >= 0 ]
         constraints += [cp.sum(v) == 1 ]
+        constraints += [v[2] <= 0.50 ]
+
         constraints += [ cp.log_sum_exp(THETA @ z) - cp.sum(cp.entr(v)) - v.T @ (THETA @ z) <= soft_v_eta ]
         
         ## Solve 
@@ -227,10 +229,12 @@ class Optimization:
         prob = cp.Problem(obj, constraints)
         prob.solve(solver='SCS')  
 
-        # try:
-        #     print(  "v",v.value)
-        # except:
-        #     print(  "status",prob.status)
+        try:
+            # print(  "v",v.value)
+            # print(  "status",prob.status)
+            temp = v.value
+        except:
+            print(  "status",prob.status)
         return np.round(v.value,4)
 
     def argmin_z(self, u, v):
@@ -282,14 +286,14 @@ class Optimization:
         ### Define objective function
         # Flex Charging 
         #f_flex = cp.multiply(u , (TOU[:N_flex] - z[0]).reshape((N_flex))) # + cp.sum_squares(u) * lam_x
-        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
+        # reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c 
         f_flex = u.T @ (TOU - z[0]) * delta_t
         g_flex = lam_h_c * cp.inv_pos(z[2])
 
         J_1 =  v[0] * (f_flex)
         
         # ASAP Charging
-        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
+        # reg_asap =  cp.norm(z[1],2) * lam_z_uc 
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1])) * delta_t
         g_asap =  lam_h_c* cp.inv_pos(z[2])
         
@@ -322,10 +326,11 @@ class Optimization:
         prob = cp.Problem(obj, constraints)
 
         prob.solve()  
-        # try:
-        #     print("z",np.round(z.value,5))
-        # except:
-        #     print(  "status",prob.status)
+        try:
+            # print("z",np.round(z.value,5))
+            temp = np.round(z.value,5)
+        except:
+            print(  "z status",prob.status)
         
         
         return z.value
@@ -408,14 +413,14 @@ class Optimization:
         ## what happened to (tou-z)? 
 
         ## z[2], what should the value be? Should we optimize it or do we have an idea? 
-        reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c
+        # reg_flex =  cp.norm(u,2) * lam_x + cp.norm(z[0],2) * lam_z_c
         f_flex = u.T @ (TOU - z[0]) * delta_t
         g_flex = lam_h_c * cp.inv_pos(z[2])
         
         J_1 =  v[0] * (f_flex)
         
         # ASAP Charging
-        reg_asap =  cp.norm(z[1],2) * lam_z_uc 
+        # reg_asap =  cp.norm(z[1],2) * lam_z_uc 
         f_asap = cp.sum(station_pow_max * (TOU[:N_asap] - z[1])) * delta_t
         g_asap = lam_h_uc * cp.inv_pos(z[2])
         J_2 =  v[1] * (f_asap )
@@ -466,7 +471,7 @@ class Optimization:
             delta_t = self.Parameters.Ts 
             soft_v_eta = self.Parameters.soft_v_eta
 
-            reg_flex =  np.linalg.norm(u,2) * lam_x + z[0]**2 * lam_z_c
+            # reg_flex =  np.linalg.norm(u,2) * lam_x + z[0]**2 * lam_z_c
  
             f_flex = u.T @ (TOU - z[0]) * delta_t
             g_flex = lam_h_c * 1 / z[2] 
@@ -474,7 +479,7 @@ class Optimization:
             J_1 =  v[0] * (f_flex)
             
             # ASAP Charging
-            reg_asap =  z[1]**2 * lam_z_uc 
+            # reg_asap =  z[1]**2 * lam_z_uc 
             f_asap = np.sum(station_pow_max * (TOU[:N_asap] - z[1])) * delta_t
             g_asap = lam_h_uc * 1 / z[2] 
             J_2 =  v[1] * (f_asap )
@@ -527,7 +532,7 @@ class Optimization:
 
         # print(J_func(zk, uk_flex, vk))
 
-        while (count < itermax) & (improve >= 0) & (abs(improve) >= self.Parameters.opt_eps):
+        while (count < itermax) & (improve >= 0) & (abs(improve) >= 0.0001):
 
             Jk[count]  = J_func(zk, uk_flex, vk).sum()
             J_sub[:,count] = J_func(zk, uk_flex, vk).reshape(3,)    
@@ -535,19 +540,18 @@ class Optimization:
             z_iter[:,count] = zk.reshape((4,))
             v_iter[:,count] = vk.reshape((3,))
 
-
-            
             uk_flex, e_deliveredk_flex = self.argmin_x(zk, vk)
             
             vk = self.argmin_v(uk_flex, zk)
             zk = self.argmin_z(uk_flex, vk)
+
             # compute residual
             # print(Jk[count])
             improve = Jk[count] - J_func(zk, uk_flex, vk).sum()
             # print(J_func(zk, uk_flex, vk))
             count += 1
 
-
+        print(improve)
         opt = {}
         opt['e_need'] = self.Problem.e_need
         opt["z"] = zk

@@ -6,6 +6,7 @@ import math
 import timeit
 from scipy.optimize import minimize
 import sys
+
 class Parameters:
     def __init__(self,sens_num_poles = np.arange(2, 18, 3), monte_num_sims = 1, sim_starttime = 7, sim_endtime = 22,
                  sim_isFixedEventSequence = False, sim_isFixedSeed = False, sim_num_Events = 50, Ts = 0.25,
@@ -68,24 +69,27 @@ class Problem:
         self.par = par
         if nargin == 0:
             # user input
-            self.user_time = 14.25
-            self.user_SOC_init = 0.3
-            self.user_SOC_need = 0.5
-            self.user_batt_cap = 80 # kwh
-            self.user_duration = 8 # hrs
-            self.user_overstay_duration = 1
-            self.station_pow_max = 7.2
-            self.station_pow_min = 0
+            event = {}
+            event["time"] = 14.25
+            event["SOC_init"] = 0.3
+            event["SOC_need"]= 0.5
+            event["batt_cap"] = 80
+            event["duration"] = 8
+            event["overstay_duration"] = 1
+            event["pow_max"] = 7.2
+            event["pow_min"] = 0 
         else:
             event = kwargs["event"]
-            self.user_time = round(event["time"] / par.Ts) * par.Ts
-            self.user_SOC_init = event["SOC_init"]
-            self.user_SOC_need = event["SOC_need"]
-            self.user_batt_cap = event["batt_cap"]
-            self.user_duration = round(event["duration"] / par.Ts) * par.Ts
-            self.user_overstay_duration = round(event["overstay_duration"] / par.Ts) * par.Ts
-            self.station_pow_max = event["pow_max"]
-            self.station_pow_min = event["pow_min"]
+        self.event = event
+        
+        self.user_time = round(event["time"] / par.Ts) * par.Ts
+        self.user_SOC_init = event["SOC_init"]
+        self.user_SOC_need = event["SOC_need"]
+        self.user_batt_cap = event["batt_cap"]
+        self.user_duration = round(event["duration"] / par.Ts) * par.Ts
+        self.user_overstay_duration = round(event["overstay_duration"] / par.Ts) * par.Ts
+        self.station_pow_max = event["pow_max"]
+        self.station_pow_min = event["pow_min"]
         #dcm params
         # asc_flex = 2 + 0.2 * prb.user.duration;
         # asc_asap = 2.5;
@@ -107,8 +111,11 @@ class Problem:
                      self.dcm_leaving_params.T))
         # problem specifications
         self.N_flex = int(self.user_duration / par.Ts) # charging duration that is not charged, hour
+        
+        ### IS THIS CORRECT? WHATS SOC NEED REPRESENTS? 
         self.N_asap = math.floor((self.user_SOC_need - self.user_SOC_init) *
                                  self.user_batt_cap / self.station_pow_max / par.eff / par.Ts)
+        
         self.TOU = interpolate.interp1d(np.arange(0, 24 - 0.25 + 0.1, 0.25), par.TOU, kind = 'nearest')(np.arange(self.user_time,0.1 + self.user_time + self.user_duration - par.Ts,par.Ts)).T
 
 
@@ -156,7 +163,8 @@ class Optimization:
         x = cp.Variable(shape = (N + N + 1,1))
         int1 = [x[self.Problem.N_flex + 1 :][i] * (self.Problem.TOU[:self.Problem.N_flex] - z[0])[i] for i in range(N)]
         int2 = [self.Parameters.lam_x * x[self.Problem.N_flex + 1:][i] for i in range(N)]
-        J = ((cp.sum(int1) + cp.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)
+        J = ((cp.sum(int1) + cp.sum(int2) + self.Parameters.lam_z_c * z[0] ** 2) + self.Parameters.lam_h_c * 1 / z[2]) * v[0] 
+        + (np.sum((self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap] - z[1])) + self.Parameters.lam_z_uc * z[1] ** 2)
            + self.Parameters.lam_h_uc * 1 / z[2]) * v[1] + np.sum(self.Problem.station_pow_max * (self.Problem.TOU[: self.Problem.N_asap ] - 0)) * v[2]
 
         # inequality constraint
@@ -188,11 +196,17 @@ class Optimization:
 
         Aeq = np.vstack((np.hstack((C1L, C1R)), np.hstack((C2L, C2R))))
         beq = np.vstack((d1, d2))
+
+        
         constraints = [A @ x <= b, Aeq @ x == beq, lb <= x, x <= ub]
         obj = cp.Minimize(J)
+
+        ## Why? 
         x.value = self.Problem.x0
+        print(x.value)
         problem = cp.Problem(obj, constraints)
-        problem.solve(solver='GUROBI', warm_start=True)
+        result = problem.solve(solver='GUROBI', warm_start=True)
+
         return x.value
 
     def argmin_z(self, x, v):
@@ -268,9 +282,13 @@ class Optimization:
         self.opt_tariff_overstay = z[2]
         self.opt_x = x
         # update demand charge
+
+        ## Change these outputs to arrays 
         self.opt_peak_pow = max(x[self.Problem.N_flex + 2:])
         self.opt_flex_SOCs = x[0:self.Problem.N_flex + 1]
         self.opt_flex_powers = x[self.Problem.N_flex + 2:]
+        
+        # ASAP POWER IS MAX STATION POWER BUT WHEN DOES IT STOP? N_ASAP CALCULATED HOW? 
         self.opt_asap_powers = np.ones((self.Problem.N_asap, 1)) * self.Problem.station_pow_max
         self.opt_v = v
         self.opt_prob_flex = v[0]

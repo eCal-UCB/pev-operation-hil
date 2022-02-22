@@ -73,6 +73,7 @@ class Problem:
         self.par = par
         if nargin == 0:
             # user input
+            ## Time is accepted as integer values
             self.user_time = 14.25
             self.user_SOC_init = 0.3
             self.user_SOC_need = 0.5
