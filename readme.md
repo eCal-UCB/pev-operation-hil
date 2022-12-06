@@ -2,8 +2,11 @@
 Python implementation of the joint price and power optimizer and analysis of the experimental results. 
 
 Optimizer: Python_Code/optimizer.py
+
 Demo: DEMO.ipynb
+
 KPI Analysis: kpi_analysis.ipnyb
+
 
 
 ## Workflow
