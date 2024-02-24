@@ -1,0 +1,46 @@
+import numpy as np
+import pandas as pd 
+
+def price_gen():
+    """ 
+    This function queries already optimized 
+    prices and returns arrays 
+    Returns: 
+        timestamp (unix timestamp) - N 
+        REG_centsPerHr - arrays
+        SCH_centsPerHr - arrays
+        SCH_overstayPerHr - int
+        SCH_centsPerkWh - we dont' use it 
+        optSuccess: [1: optimization without error,0: optimization failed, use default values] 
+    """
+
+    recent_dir =  "Outputs/Recent"
+    reg_price = pd.read_excel(os.path.join(recent_dir, "Regular_Prices.xlsx")) # Prices are stored as cents / hour 
+    sch_price = pd.read_excel(os.path.join(recent_dir, "Scheduled_Prices.xlsx")) # Prices are stored as cents / hour  
+
+    # In this array each point is associated with a duration and energy demand. 
+    # How will Kitu now which one to pull?
+    # Should I interpolate the array and store like that? Ie. 0.5 kW bins 
+    
+    REG_centsPerHr = reg_price.values()
+    SCH_centsPerHr = sch_price.values()
+    SCH_overstayPerHr = float(np.max(np.concatenate([REG_centsPerHr, SCH_centsPerHr])))
+
+
+    ## Last Modified 
+    # Get file's Last modification time stamp only in terms of seconds since epoch 
+    modTimesinceEpoc = os.path.getmtime(pathOfFile)
+    # Convert seconds since epoch to readable timestamp
+    modificationTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modTimesinceEpoc))
+    print("Last Modified Time : ", modificationTime )
+
+
+
+
+
+
+
+
+
+
+
